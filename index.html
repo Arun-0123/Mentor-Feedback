@@ -1651,7 +1651,425 @@ function landingFilterRender(){
     return`<tr><td style="text-align:center;">${rankBadge}</td><td style="font-size:13px;font-weight:500;color:#7a4f00;">${r.college}</td><td style="text-align:center;">${ratingCell}</td><td style="text-align:center;font-family:var(--font-display);font-size:17px;color:${landingNpsColor(r.nps)};">${npsDisplay}</td><td>${hitCell}</td><td style="text-align:center;">${viewBtn}</td></tr>`;
   }).join('');
 }
+/**
+ * ============================================================
+ *  MENTOR PERFORMANCE — MONTH DROPDOWN FILTER
+ *  Stack : Vanilla HTML / JS
+ *  DB    : Supabase  (columns: `month` INT, `year` INT)
+ * ============================================================
+ *
+ *  HOW TO USE
+ *  ----------
+ *  1. Add this <script> tag AFTER your supabase-js CDN tag:
+ *       <script src="mentor_performance_month_filter.js"></script>
+ *
+ *  2. Paste the HTML snippet (see bottom of this file) where
+ *     you want the dropdown to appear in your page.
+ *
+ *  3. Replace TABLE_NAME and COLUMN names (lines 30-33) to
+ *     match your actual Supabase table/column names.
+ *
+ *  4. Make sure your Supabase client is initialised BEFORE
+ *     this file is loaded, e.g.:
+ *       const supabase = supabase.createClient(URL, ANON_KEY);
+ * ============================================================
+ */
 
+/* ── CONFIG — edit these to match your Supabase schema ────── */
+const MP_CONFIG = {
+  tableName   : "mentor_responses",   // ← your responses table
+  monthCol    : "month",              // ← INT column  (1-12)
+  yearCol     : "year",               // ← INT column  (e.g. 2026)
+  mentorIdCol : "mentor_id",          // ← FK to mentors table
+  ratingCol   : "rating",             // ← numeric rating column
+};
+/* ─────────────────────────────────────────────────────────── */
+
+const MONTH_NAMES = [
+  "", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
+
+/* ── 1. Fetch every distinct (month, year) from Supabase ──── */
+async function fetchAvailableMonths() {
+  const { data, error } = await supabase
+    .from(MP_CONFIG.tableName)
+    .select(`${MP_CONFIG.monthCol}, ${MP_CONFIG.yearCol}`)
+    .order(MP_CONFIG.yearCol,  { ascending: true })
+    .order(MP_CONFIG.monthCol, { ascending: true });
+
+  if (error) {
+    console.error("fetchAvailableMonths error:", error.message);
+    return [];
+  }
+
+  /* Deduplicate: keep unique "YYYY-MM" pairs */
+  const seen = new Set();
+  const unique = [];
+  for (const row of data) {
+    const key = `${row[MP_CONFIG.yearCol]}-${String(row[MP_CONFIG.monthCol]).padStart(2, "0")}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push({ month: row[MP_CONFIG.monthCol], year: row[MP_CONFIG.yearCol], key });
+    }
+  }
+  return unique;          // e.g. [{month:1,year:2026,key:"2026-01"}, …]
+}
+
+/* ── 2. Populate the <select> element ───────────────────────── */
+async function populateMonthDropdown() {
+  const select = document.getElementById("monthFilterSelect");
+  if (!select) return;
+
+  /* Show loading state */
+  select.innerHTML = '<option value="">Loading…</option>';
+  select.disabled = true;
+
+  const months = await fetchAvailableMonths();
+
+  /* Build options */
+  let html = '<option value="all">All Months</option>';
+  for (const { month, year, key } of months) {
+    const label = `${MONTH_NAMES[month]} ${year}`;
+    html += `<option value="${key}">${label}</option>`;
+  }
+
+  select.innerHTML = html;
+  select.disabled = false;
+
+  /* Attach change listener once */
+  select.removeEventListener("change", onMonthChange);
+  select.addEventListener("change", onMonthChange);
+}
+
+/* ── 3. Handle dropdown change ──────────────────────────────── */
+async function onMonthChange(e) {
+  const value = e.target.value;           // "all" | "2026-01" | …
+
+  showTableLoadingState(true);
+
+  let monthNum = null, yearNum = null;
+  if (value !== "all") {
+    const [y, m] = value.split("-");
+    yearNum  = parseInt(y, 10);
+    monthNum = parseInt(m, 10);
+  }
+
+  const { mentors, globalMean, totalResponses } =
+    await fetchMentorPerformance(monthNum, yearNum);
+
+  renderMentorTable(mentors);
+  updateSummaryBar(globalMean, totalResponses);
+  showTableLoadingState(false);
+}
+
+/* ── 4. Fetch mentor performance (optionally filtered) ──────── */
+async function fetchMentorPerformance(month = null, year = null) {
+  /*
+   * Build a query that groups by mentor and computes:
+   *   - avg(rating)
+   *   - count(*)
+   *
+   * Supabase JS v2 does not support GROUP BY natively via the
+   * select() builder, so we use a Postgres RPC / view.
+   *
+   * OPTION A (recommended) — create a Supabase database function
+   *   named `get_mentor_performance` that accepts month & year
+   *   params (NULL means "all months").
+   *
+   * OPTION B — use a materialised view + filter.
+   *
+   * The code below calls OPTION A.  See the SQL at the bottom
+   * of this file to create the function.
+   */
+  const { data, error } = await supabase.rpc("get_mentor_performance", {
+    p_month : month,   // INT or null
+    p_year  : year,    // INT or null
+  });
+
+  if (error) {
+    console.error("fetchMentorPerformance error:", error.message);
+    return { mentors: [], globalMean: 0, totalResponses: 0 };
+  }
+
+  /*
+   * Expected RPC response shape (array):
+   * [
+   *   {
+   *     mentor_id      : "uuid…",
+   *     mentor_name    : "Ms. Rakshitha",
+   *     department     : "II BCA",
+   *     avg_rating     : 4.78,
+   *     total_responses: 100,
+   *     bayesian_value : 4.5574136,
+   *     status         : "Excellent"   ← computed by SQL
+   *   }, …
+   * ]
+   */
+
+  /* Sort by bayesian_value descending (rank 1 = best) */
+  const sorted = [...data].sort((a, b) => b.bayesian_value - a.bayesian_value);
+
+  /* Global stats */
+  const totalResponses = sorted.reduce((s, r) => s + r.total_responses, 0);
+  const globalMean     = totalResponses
+    ? sorted.reduce((s, r) => s + r.avg_rating * r.total_responses, 0) / totalResponses
+    : 0;
+
+  return { mentors: sorted, globalMean, totalResponses };
+}
+
+/* ── 5. Render the mentor rows ──────────────────────────────── */
+function renderMentorTable(mentors) {
+  const tbody = document.getElementById("mentorTableBody");
+  if (!tbody) return;
+
+  if (!mentors.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align:center;padding:2rem;color:#888;">
+          No data available for the selected period.
+        </td>
+      </tr>`;
+    return;
+  }
+
+  const rankIcons = {
+    1: `<span class="rank-badge rank-gold">1</span>`,
+    2: `<span class="rank-badge rank-silver">2</span>`,
+    3: `<span class="rank-badge rank-bronze">3</span>`,
+  };
+
+  tbody.innerHTML = mentors.map((m, i) => {
+    const rank      = i + 1;
+    const rankCell  = rankIcons[rank] ?? `<span class="rank-badge rank-plain">${rank}</span>`;
+    const statusCls = m.status?.toLowerCase() === "excellent" ? "status-excellent" : "status-good";
+
+    return `
+      <tr>
+        <td>${rankCell}</td>
+        <td><a href="#" class="mentor-link">${escHtml(m.mentor_name)}</a></td>
+        <td><span class="dept-badge">${escHtml(m.department)}</span></td>
+        <td>${Number(m.avg_rating).toFixed(2)}<span class="rating-denom">/5</span></td>
+        <td>${m.total_responses}</td>
+        <td>${Number(m.bayesian_value).toFixed(7)}</td>
+        <td><span class="status-badge ${statusCls}">${escHtml(m.status)}</span></td>
+      </tr>`;
+  }).join("");
+}
+
+/* ── 6. Update the global-mean / total-responses bar ────────── */
+function updateSummaryBar(globalMean, totalResponses) {
+  const meanEl  = document.getElementById("globalMeanValue");
+  const totalEl = document.getElementById("totalResponsesValue");
+  if (meanEl)  meanEl.textContent  = globalMean.toFixed(7);
+  if (totalEl) totalEl.textContent = totalResponses;
+}
+
+/* ── 7. Loading overlay for the table ──────────────────────── */
+function showTableLoadingState(isLoading) {
+  const wrap = document.getElementById("mentorTableWrap");
+  if (!wrap) return;
+  wrap.style.opacity  = isLoading ? "0.4" : "1";
+  wrap.style.pointerEvents = isLoading ? "none" : "";
+}
+
+/* ── 8. Tiny XSS helper ─────────────────────────────────────── */
+function escHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/* ── 9. Init — call this on DOMContentLoaded ─────────────────── */
+async function initMentorPerformancePage() {
+  await populateMonthDropdown();
+
+  /* Load "All Months" data immediately on page open */
+  const { mentors, globalMean, totalResponses } =
+    await fetchMentorPerformance(null, null);
+  renderMentorTable(mentors);
+  updateSummaryBar(globalMean, totalResponses);
+}
+
+document.addEventListener("DOMContentLoaded", initMentorPerformancePage);
+
+
+/* ════════════════════════════════════════════════════════════
+   HTML SNIPPET — paste this into your mentor-performance page
+   ════════════════════════════════════════════════════════════
+
+<!-- ── Month filter dropdown ── -->
+<div class="month-filter-wrap">
+  <label for="monthFilterSelect" class="month-filter-label">Filter by Month</label>
+  <div class="month-select-wrapper">
+    <select id="monthFilterSelect" class="month-filter-select">
+      <option value="all">All Months</option>
+    </select>
+    <span class="select-arrow">▼</span>
+  </div>
+</div>
+
+<!-- ── Summary bar (update ids to match your existing elements) ── -->
+<div class="summary-bar">
+  <div>
+    <span class="label">GLOBAL MEAN</span>
+    <span id="globalMeanValue" class="value">—</span>
+  </div>
+  <div>
+    <span class="label">Σ TOTAL RESPONSES</span>
+    <span id="totalResponsesValue" class="value">—</span>
+  </div>
+</div>
+
+<!-- ── Mentor table ── -->
+<div id="mentorTableWrap">
+  <table>
+    <thead>
+      <tr>
+        <th>RANK</th>
+        <th>MENTOR NAME</th>
+        <th>DEPARTMENT</th>
+        <th>AVERAGE RATING</th>
+        <th>TOTAL RESPONSES</th>
+        <th>BAYESIAN VALUE</th>
+        <th>STATUS</th>
+      </tr>
+    </thead>
+    <tbody id="mentorTableBody">
+      <!-- rows injected by renderMentorTable() -->
+    </tbody>
+  </table>
+</div>
+
+   ════════════════════════════════════════════════════════════ */
+
+
+/* ════════════════════════════════════════════════════════════
+   CSS — add to your stylesheet (matches your dark-gold theme)
+   ════════════════════════════════════════════════════════════
+
+.month-filter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.month-filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #7a5c1e;
+  text-transform: uppercase;
+}
+
+.month-select-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.month-filter-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #fff;
+  border: 1.5px solid #c9a84c;
+  border-radius: 999px;
+  padding: 0.4rem 2.2rem 0.4rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #3b2a0a;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.month-filter-select:hover,
+.month-filter-select:focus {
+  border-color: #a07820;
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.20);
+}
+
+.month-filter-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 0.7rem;
+  font-size: 0.6rem;
+  color: #a07820;
+  pointer-events: none;
+}
+
+   ════════════════════════════════════════════════════════════ */
+
+
+/* ════════════════════════════════════════════════════════════
+   SUPABASE SQL — run once in your Supabase SQL editor
+   Creates the RPC function used by fetchMentorPerformance()
+   ════════════════════════════════════════════════════════════
+
+CREATE OR REPLACE FUNCTION get_mentor_performance(
+  p_month INT DEFAULT NULL,
+  p_year  INT DEFAULT NULL
+)
+RETURNS TABLE (
+  mentor_id        UUID,
+  mentor_name      TEXT,
+  department       TEXT,
+  avg_rating       NUMERIC,
+  total_responses  BIGINT,
+  bayesian_value   NUMERIC,
+  status           TEXT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_global_mean  NUMERIC;
+  v_global_count NUMERIC;
+  m              NUMERIC := 10;   -- prior weight (tune as needed)
+BEGIN
+  -- Compute global priors for Bayesian average
+  SELECT AVG(rating), COUNT(*)
+  INTO   v_global_mean, v_global_count
+  FROM   mentor_responses
+  WHERE  (p_month IS NULL OR month = p_month)
+    AND  (p_year  IS NULL OR year  = p_year);
+
+  RETURN QUERY
+  SELECT
+    r.mentor_id,
+    me.name                                          AS mentor_name,
+    me.department,
+    ROUND(AVG(r.rating)::NUMERIC, 7)                 AS avg_rating,
+    COUNT(*)                                         AS total_responses,
+    ROUND(
+      ( (m * v_global_mean) + SUM(r.rating) )
+      / (m + COUNT(*))
+    , 7)                                             AS bayesian_value,
+    CASE
+      WHEN AVG(r.rating) >= 4.4 THEN 'Excellent'
+      WHEN AVG(r.rating) >= 4.0 THEN 'Good'
+      WHEN AVG(r.rating) >= 3.0 THEN 'Average'
+      ELSE 'Needs Improvement'
+    END                                              AS status
+  FROM   mentor_responses r
+  JOIN   mentors me ON me.id = r.mentor_id
+  WHERE  (p_month IS NULL OR r.month = p_month)
+    AND  (p_year  IS NULL OR r.year  = p_year)
+  GROUP  BY r.mentor_id, me.name, me.department
+  ORDER  BY bayesian_value DESC;
+END;
+$$;
+
+-- Grant access to anon / authenticated roles
+GRANT EXECUTE ON FUNCTION get_mentor_performance(INT, INT) TO anon, authenticated;
+
+   ════════════════════════════════════════════════════════════ */
 /* ═══════════════════════════════════════════
    DOWNLOAD
 ═══════════════════════════════════════════ */
