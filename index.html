@@ -114,6 +114,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-siz
 .filter-chip{padding:7px 16px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--ink3);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all 0.15s;box-shadow:var(--shadow-sm);}
 .filter-chip:hover{color:var(--gold-dark);border-color:var(--gold-mid);}
 .filter-chip.active{background:var(--gold-dark);color:#fde9a0;border-color:var(--gold-dark);box-shadow:0 2px 8px rgba(120,80,0,0.25);}
+#monthFilterSelect:focus{border-color:var(--gold-mid);box-shadow:0 0 0 2px rgba(196,138,0,0.15);}
+#monthFilterSelect option[value="all"]{font-weight:600;}
 
 .panel{display:none;flex-direction:column;gap:22px;}
 .panel.active{display:flex;}
@@ -481,8 +483,20 @@ tbody tr{transition:background 0.12s;}
       <div class="page-title" id="pageTitle">College Overview</div>
       <div class="page-sub" id="pageSub">All colleges · Live data from Google Sheets</div>
     </div>
-    <div class="filter-row" id="deptFilterRow" style="visibility:hidden">
-      <button class="filter-chip active" onclick="setDeptFilter('all',this)">All</button>
+    <!-- MENTOR FILTERS: Department + Month -->
+    <div id="mentorFilterBar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;visibility:hidden;">
+      <!-- Department Filter Chips -->
+      <div class="filter-row" id="deptFilterRow" style="flex:1;min-width:0;">
+        <button class="filter-chip active" onclick="setDeptFilter('all',this)">All Depts</button>
+      </div>
+      <!-- Month Filter Dropdown -->
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink3);">Month</label>
+        <select id="monthFilterSelect" onchange="setMonthFilter(this.value)"
+          style="padding:7px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--ink);font-family:var(--font-body);font-size:12px;font-weight:500;cursor:pointer;box-shadow:var(--shadow-sm);outline:none;transition:border 0.15s;">
+          <option value="all">All Months (Average)</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -619,10 +633,13 @@ tbody tr{transition:background 0.12s;}
   <!-- MENTOR PERFORMANCE PANEL -->
   <div class="panel" id="panel-mentors">
     <div id="mentorGlobalSummaryBar" class="card" style="padding:0;overflow:hidden;">
-      <div id="mentorTableSummaryBar" style="display:flex;align-items:center;gap:24px;padding:14px 22px;background:linear-gradient(135deg,#4a2800,#7a4f00);flex-wrap:wrap;">
+    <div id="mentorTableSummaryBar" style="display:flex;align-items:center;gap:24px;padding:14px 22px;background:linear-gradient(135deg,#4a2800,#7a4f00);flex-wrap:wrap;">
         <div style="color:#fde9a0;font-size:12px;"><span style="opacity:0.6;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px;">Global Mean</span><span id="mtSumGlobalMean" style="font-family:'DM Serif Display',Georgia,serif;font-size:18px;">—</span></div>
         <div style="color:#fde9a0;font-size:12px;"><span style="opacity:0.6;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px;">Σ Total Responses</span><span id="mtSumTotalResp" style="font-family:'DM Serif Display',Georgia,serif;font-size:18px;">—</span></div>
-        <div style="margin-left:auto;"><span class="badge badge-gold" id="mentorTableCountBadge">—</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+          <span id="mtMonthChip" style="display:none;padding:3px 10px;border-radius:20px;background:rgba(245,200,66,0.25);border:1px solid rgba(245,200,66,0.5);color:#fde9a0;font-size:11px;font-weight:600;"></span>
+          <span class="badge badge-gold" id="mentorTableCountBadge">—</span>
+        </div>
       </div>
     </div>
     <div id="deptStatsPanelWrap" style="display:none;"></div>
@@ -912,6 +929,10 @@ let MENTORS=[],TABLE_DATA=[],DEPT_LIST=[],DEPT_STUDENT_COUNT={};
 let NPS_DATA={scores:[],promoters:0,passives:0,detractors:0,npsIndex:null,avg:0,total:0,scoreFreq:{}};
 let TREND_DATA={cycles:[],hasCycleCol:false,hasDedicatedSheet:false,cycleStats:{},mentorCycleStats:{}};
 let currentDetailPanel='summary',currentDeptFilter='all';
+// Month filter: 'all' = consolidated average across all months, or a specific cycle name like 'Jan 2026'
+let currentMonthFilter='all';
+// Stores per-cycle mentor rating data: { cycleName: { mentorName: [ratings...], ... }, ... }
+let MENTOR_CYCLE_DATA={};
 let chartInstances={};
 let trendRatingInst=null,trendNpsInst=null,trendHitRatioInst=null,trendSegInst=null;
 let needleAnimRAF=null;
@@ -941,7 +962,7 @@ function selectCollege(idx){currentCollege=COLLEGES[idx];document.querySelectorA
 /* ═══════════════════════════════════════════
    MODE SWITCHING
 ═══════════════════════════════════════════ */
-function switchToOverviewMode(){currentMode='overview';document.getElementById('navOverview').classList.remove('hidden-nav');document.getElementById('navOverview').classList.add('active');['navSummary','navMentors','navNps','navTrends'].forEach(id=>{document.getElementById(id).classList.add('hidden-nav');document.getElementById(id).classList.remove('active');});document.getElementById('deptFilterRow').style.visibility='hidden';document.getElementById('pageEyebrow').textContent='Performance Analytics';document.getElementById('pageTitle').textContent='College Overview';document.getElementById('pageSub').textContent='All colleges · Live data from Google Sheets';document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('panel-landing').classList.add('active');if(!landingLoaded)landingFetchData();}
+function switchToOverviewMode(){currentMode='overview';document.getElementById('navOverview').classList.remove('hidden-nav');document.getElementById('navOverview').classList.add('active');['navSummary','navMentors','navNps','navTrends'].forEach(id=>{document.getElementById(id).classList.add('hidden-nav');document.getElementById(id).classList.remove('active');});document.getElementById('mentorFilterBar').style.visibility='hidden';document.getElementById('pageEyebrow').textContent='Performance Analytics';document.getElementById('pageTitle').textContent='College Overview';document.getElementById('pageSub').textContent='All colleges · Live data from Google Sheets';document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('panel-landing').classList.add('active');if(!landingLoaded)landingFetchData();}
 function switchToDetailMode(){currentMode='detail';document.getElementById('navOverview').classList.add('hidden-nav');document.getElementById('navOverview').classList.remove('active');['navSummary','navMentors','navNps','navTrends'].forEach(id=>{document.getElementById(id).classList.remove('hidden-nav');});showDetailPanel('summary',document.getElementById('navSummary'));}
 function showDetailPanel(id,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
@@ -954,7 +975,7 @@ const meta={summary:['Performance Analytics','Overview'],mentors:['Mentor Analyt
   document.getElementById('pageTitle').textContent=meta[id][1];
   document.getElementById('pageSub').textContent=currentCollege?currentCollege.name:'—';
   document.querySelector('.page-header').style.display=id==='trends'?'none':'flex';
-  document.getElementById('deptFilterRow').style.visibility=id==='mentors'?'visible':'hidden';
+  document.getElementById('mentorFilterBar').style.visibility=id==='mentors'?'visible':'hidden';
   if(id==='mentors'&&MENTORS.length){renderMentorTable();renderDeptStatsPanel(currentDeptFilter);}
   if(id==='nps'&&NPS_DATA.total){renderNPSPanel();}
   if(id==='trends'&&TREND_DATA.cycles.length)renderTrendPanel();
@@ -971,6 +992,9 @@ function refreshData(){const btn=document.getElementById('refreshBtn');btn.class
 ═══════════════════════════════════════════ */
 async function loadSheetData(){
   if(!currentCollege)return;
+  // Reset month filter when switching colleges
+  currentMonthFilter='all';
+  const selMF=document.getElementById('monthFilterSelect');if(selMF)selMF.value='all';
   const overlay=document.getElementById('loadingOverlay'),errEl=document.getElementById('errorMessage');
   document.getElementById('loadingText').textContent=`Loading data for ${currentCollege.name}...`;
   overlay.classList.remove('hidden');errEl.classList.remove('show');
@@ -1010,7 +1034,9 @@ function processDedicatedTrendData(rows,collegeName){
 }
 
 function processSheetData(rows){
-  window.RAW_SHEET_ROWS=rows;
+  // Only reset month filter when this is the primary/full load (not a filtered rebuild)
+  const isFullLoad=rows===window.RAW_SHEET_ROWS||!window.RAW_SHEET_ROWS;
+  if(isFullLoad){window.RAW_SHEET_ROWS=rows;currentMonthFilter='all';const sel=document.getElementById('monthFilterSelect');if(sel)sel.value='all';}
   TABLE_DATA=[];
   const deptStudentCount={};
   const mentorStats={},deptSet=new Set(),subjectSet=new Set(),npsScores=[];
@@ -1093,7 +1119,96 @@ function getMentorDeptResponses(mentor,dept){if(!dept||dept==='all')return mento
 /* ═══════════════════════════════════════════
    DEPT FILTER
 ═══════════════════════════════════════════ */
-function updateDeptFilters(){const fr=document.getElementById('deptFilterRow');fr.innerHTML='<button class="filter-chip active" onclick="setDeptFilter(\'all\',this)">All</button>';DEPT_LIST.forEach(dept=>{const btn=document.createElement('button');btn.className='filter-chip';btn.textContent=dept;btn.onclick=function(){setDeptFilter(dept,this);};fr.appendChild(btn);});}
+function updateDeptFilters(){const fr=document.getElementById('deptFilterRow');fr.innerHTML='<button class="filter-chip active" onclick="setDeptFilter(\'all\',this)">All Depts</button>';DEPT_LIST.forEach(dept=>{const btn=document.createElement('button');btn.className='filter-chip';btn.textContent=dept;btn.onclick=function(){setDeptFilter(dept,this);};fr.appendChild(btn);});
+  // Populate month filter dropdown
+  populateMonthFilterDropdown();
+}
+function populateMonthFilterDropdown(){
+  const sel=document.getElementById('monthFilterSelect');
+  if(!sel)return;
+  const cycles=TREND_DATA.cycles||[];
+  // Reset
+  sel.innerHTML='<option value="all">All Months (Average)</option>';
+  cycles.forEach(cycle=>{
+    const opt=document.createElement('option');
+    opt.value=cycle;
+    opt.textContent=cycle;
+    sel.appendChild(opt);
+  });
+  // Restore current selection if still valid
+  if(currentMonthFilter!=='all'&&cycles.includes(currentMonthFilter)){
+    sel.value=currentMonthFilter;
+  }else{
+    sel.value='all';
+    currentMonthFilter='all';
+  }
+}
+function setMonthFilter(val){
+  currentMonthFilter=val;
+  if(currentDetailPanel==='mentors'){
+    rebuildMentorsForMonth(val);
+    renderMentorTable();
+    renderDeptStatsPanel(currentDeptFilter);
+    // Update summary bar label
+    const label=val==='all'?'All Months (Avg)':val;
+    const countBadge=document.getElementById('mentorTableCountBadge');
+    if(countBadge)countBadge.setAttribute('data-month-label',label);
+  }
+}
+/* Rebuild MENTORS array for a specific month cycle or all months */
+function rebuildMentorsForMonth(month){
+  if(!month||month==='all'){
+    // Restore full aggregated MENTORS from RAW_SHEET_ROWS
+    if(window.RAW_SHEET_ROWS)processSheetData(window.RAW_SHEET_ROWS);
+    return;
+  }
+  // Filter RAW_SHEET_ROWS to only rows matching this cycle
+  if(!window.RAW_SHEET_ROWS)return;
+  const cycleColNames=['cycle','batch','term','semester','month','period'];
+  let cycleCol=null;
+  if(window.RAW_SHEET_ROWS.length>0){const keys=Object.keys(window.RAW_SHEET_ROWS[0]);cycleCol=keys.find(k=>cycleColNames.includes(k.toLowerCase().trim()))||null;}
+  let filteredRows;
+  if(cycleCol){
+    filteredRows=window.RAW_SHEET_ROWS.filter(row=>{
+      const raw=(row[cycleCol]||'').trim();
+      const mapped=MONTH_ALIAS_MAP[raw.toLowerCase()]||raw;
+      return mapped===month||raw===month;
+    });
+  }else{
+    // No cycle column — use TREND_DATA.cycleStats[month].mentorRatings if available (dedicated sheet)
+    if(TREND_DATA.hasDedicatedSheet&&TREND_DATA.cycleStats[month]&&TREND_DATA.cycleStats[month].mentorRatings){
+      buildMentorsFromCycleStat(month);
+      return;
+    }
+    // Fallback: show all rows (no cycle distinction possible)
+    filteredRows=window.RAW_SHEET_ROWS;
+  }
+  if(!filteredRows||!filteredRows.length){
+    MENTORS=[];
+    renderMentorTable();
+    return;
+  }
+  // Temporarily process only these rows (preserve RAW_SHEET_ROWS)
+  const saved=window.RAW_SHEET_ROWS;
+  window.RAW_SHEET_ROWS=filteredRows;
+  processSheetData(filteredRows);
+  window.RAW_SHEET_ROWS=saved;
+}
+/* Build MENTORS from a dedicated trend sheet's mentorRatings for one cycle */
+function buildMentorsFromCycleStat(month){
+  const stat=TREND_DATA.cycleStats[month];
+  if(!stat||!stat.mentorRatings)return;
+  const allRatings=Object.values(stat.mentorRatings);
+  const globalMean=allRatings.length?allRatings.reduce((a,b)=>a+b,0)/allRatings.length:0;
+  const totalAll=allRatings.length;
+  const mentorCount=allRatings.length||1;
+  const C=totalAll/mentorCount;
+  MENTORS=Object.entries(stat.mentorRatings).map(([name,avg])=>{
+    const bayesianScore=(globalMean*C+avg*1)/(C+1);
+    return{name,depts:['—'],rating:parseFloat(avg.toFixed(2)),avgXResponses:parseFloat(avg.toFixed(2)),bayesianRating:parseFloat(bayesianScore.toFixed(7)),subjects:1,responses:1,qs:[{y:0,n:0},{y:0,n:0},{y:0,n:0},{y:0,n:0},{y:0,n:0}],deptQs:{},deptRatings:{}};
+  }).sort((a,b)=>b.bayesianRating-a.bayesianRating);
+  MENTORS.forEach((m,idx,arr)=>{if(idx===0){m.rank=1;}else if(m.bayesianRating===arr[idx-1].bayesianRating){m.rank=arr[idx-1].rank;}else{m.rank=idx+1;}m.percentile=MENTORS.length>1?Math.round((1-idx/(MENTORS.length-1))*100):100;});
+}
 function setDeptFilter(val,btn){currentDeptFilter=val;document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));if(btn)btn.classList.add('active');if(currentDetailPanel==='mentors'){renderMentorTable();renderDeptStatsPanel(val);}}
 
 /* ═══════════════════════════════════════════
@@ -1164,6 +1279,7 @@ function calcDeptBayesian(mentor,dept){
   return(deptGlobalMean*C+mentorDeptAvg*mentorDeptResponses)/(C+mentorDeptResponses);
 }
 function renderAllData(){
+  populateMonthFilterDropdown();
   renderMentorTable();renderNPSSummary();renderNPSPanel();renderTrendPanel();renderDeptStatsPanel(currentDeptFilter);
   if(!chartInstances._summaryInit){initSummaryCharts();chartInstances._summaryInit=true;}else updateSummaryCharts();
 }
@@ -1373,7 +1489,10 @@ function renderStudentVoiceResult(likes,improvements,q6Count,q7Count){
 /* ═══════════════════════════════════════════
    TREND PANEL
 ═══════════════════════════════════════════ */
-function buildTrendCycleButtons(){const{cycles}=TREND_DATA;const wrap=document.getElementById('trendCycleBtns');if(!cycles.length){wrap.innerHTML='';return;}wrap.innerHTML=cycles.map((c,i)=>`<button class="trend-cycle-btn${i===cycles.length-1?' active':''}" onclick="selectTrendCycle('${c}',this)">${c}</button>`).join('');}
+function buildTrendCycleButtons(){const{cycles}=TREND_DATA;const wrap=document.getElementById('trendCycleBtns');if(!cycles.length){wrap.innerHTML='';return;}wrap.innerHTML=cycles.map((c,i)=>`<button class="trend-cycle-btn${i===cycles.length-1?' active':''}" onclick="selectTrendCycle('${c}',this)">${c}</button>`).join('');
+  // Also refresh month filter dropdown with latest cycles
+  populateMonthFilterDropdown();
+}
 function selectTrendCycle(cycle,btn){document.querySelectorAll('.trend-cycle-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderTrendKpis(cycle);}
 function getTrendDateRange(){
   const{cycles}=TREND_DATA;
@@ -1429,17 +1548,28 @@ function renderTrendCycleTable(){
 ═══════════════════════════════════════════ */
 function renderMentorTable(){
   const list=getFilteredMentors(currentDeptFilter);const isDeptActive=currentDeptFilter&&currentDeptFilter!=='all';
+  const isMonthActive=currentMonthFilter&&currentMonthFilter!=='all';
   let displayMean,displayTotal;
   if(isDeptActive){const deptMs=MENTORS.filter(m=>m.depts.some(d=>d===currentDeptFilter));let tw=0,tr=0;deptMs.forEach(m=>{const rs=m.deptRatings[currentDeptFilter]||[];tw+=rs.reduce((a,b)=>a+b,0);tr+=rs.length;});displayMean=tr>0?tw/tr:0;displayTotal=tr;}
   else{const sumResponses=MENTORS.reduce((s,m)=>s+m.responses,0);const sumAvgXResp=MENTORS.reduce((s,m)=>s+m.avgXResponses,0);displayMean=sumResponses>0?sumAvgXResp/sumResponses:0;displayTotal=sumResponses;}
-  document.getElementById('mtSumGlobalMean').textContent=displayMean>0?displayMean.toFixed(7):'—';document.getElementById('mtSumTotalResp').textContent=displayTotal||'—';document.getElementById('mentorTableCountBadge').textContent=list.length>0?`${list.length} mentors`:'No data';
-  if(!list.length){document.getElementById('mentorTableBody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink3)">No mentors found</td></tr>';return;}
+  document.getElementById('mtSumGlobalMean').textContent=displayMean>0?displayMean.toFixed(7):'—';document.getElementById('mtSumTotalResp').textContent=displayTotal||'—';
+  // Show month context in badge
+  const monthLabel=isMonthActive?` · ${currentMonthFilter}`:'';
+  document.getElementById('mentorTableCountBadge').textContent=list.length>0?`${list.length} mentors${monthLabel}`:'No data';
+  // Update summary bar month chip
+  const monthChipWrap=document.getElementById('mtMonthChip');
+  if(monthChipWrap){
+    if(isMonthActive){monthChipWrap.style.display='inline-flex';monthChipWrap.textContent=currentMonthFilter;}
+    else{monthChipWrap.style.display='none';monthChipWrap.textContent='';}
+  }
+  if(!list.length){document.getElementById('mentorTableBody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink3)">No mentors found for this selection</td></tr>';return;}
   const deptLabel=isDeptActive?currentDeptFilter:null;const rankColors={1:'#f5c842',2:'#e0e0e0',3:'#f0c498'};
   document.getElementById('mentorTableBody').innerHTML=list.map(m=>{
     const displayRank=m.filteredRank;const rankBg=rankColors[displayRank]||'transparent';const rankColor=displayRank<=3?'#3d2200':'var(--ink3)';const rankBorder=displayRank<=3?'none':'1px solid var(--border2)';
     const displayDept=deptLabel||m.depts.join(', ');const s=deptStyle(deptLabel||m.depts[0]||'');
     const displayRating=isDeptActive?getMentorDeptRating(m,currentDeptFilter):m.rating;const displayResponses=isDeptActive?getMentorDeptResponses(m,currentDeptFilter):m.responses;const ratingColor=isDeptActive?getStatusColor(displayRating):'var(--gold-dark)';
-    return`<tr><td style="text-align:center;"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${rankBg};border:${rankBorder};font-size:11px;font-weight:700;color:${rankColor};">${displayRank}</span></td><td><button class="mentor-name-btn" data-mentor="${m.name.replace(/"/g,'&quot;')}" data-dept="${(deptLabel||'').replace(/"/g,'&quot;')}">${m.name}</button></td><td><span class="badge" style="color:${s.color};background:${s.bg};border:1px solid ${s.border}">${displayDept}</span></td><td style="text-align:center;"><span style="font-family:var(--font-display);font-size:18px;color:${ratingColor};">${displayRating.toFixed(2)}</span><span style="font-size:11px;color:var(--ink4);">/5</span>${isDeptActive?`<div style="font-size:10px;color:var(--ink4);margin-top:1px;">(${currentDeptFilter})</div>`:''}</td><td style="text-align:center;font-family:var(--font-display);font-size:16px;color:var(--ink2);">${displayResponses}${isDeptActive?`<div style="font-size:10px;color:var(--ink4);font-family:var(--font-body);">dept only</div>`:''}</td><td style="text-align:center;"><span style="font-family:var(--font-display);font-size:16px;color:var(--gold-dark);">${isDeptActive?calcDeptBayesian(m,currentDeptFilter).toFixed(7):m.bayesianRating.toFixed(7)}</span>${isDeptActive?`<div style="font-size:10px;color:var(--ink4);font-family:var(--font-body);">dept bayesian</div>`:''}</td><td>${statusBadge(displayRating)}</td></tr>`;
+    const monthNote=isMonthActive?`<div style="font-size:10px;color:var(--ink4);margin-top:1px;">(${currentMonthFilter})</div>`:'';
+    return`<tr><td style="text-align:center;"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${rankBg};border:${rankBorder};font-size:11px;font-weight:700;color:${rankColor};">${displayRank}</span></td><td><button class="mentor-name-btn" data-mentor="${m.name.replace(/"/g,'&quot;')}" data-dept="${(deptLabel||'').replace(/"/g,'&quot;')}">${m.name}</button></td><td><span class="badge" style="color:${s.color};background:${s.bg};border:1px solid ${s.border}">${displayDept}</span></td><td style="text-align:center;"><span style="font-family:var(--font-display);font-size:18px;color:${ratingColor};">${displayRating.toFixed(2)}</span><span style="font-size:11px;color:var(--ink4);">/5</span>${isDeptActive?`<div style="font-size:10px;color:var(--ink4);margin-top:1px;">(${currentDeptFilter})</div>`:''}${monthNote}</td><td style="text-align:center;font-family:var(--font-display);font-size:16px;color:var(--ink2);">${displayResponses}${isDeptActive?`<div style="font-size:10px;color:var(--ink4);font-family:var(--font-body);">dept only</div>`:''}</td><td style="text-align:center;"><span style="font-family:var(--font-display);font-size:16px;color:var(--gold-dark);">${isDeptActive?calcDeptBayesian(m,currentDeptFilter).toFixed(7):m.bayesianRating.toFixed(7)}</span>${isDeptActive?`<div style="font-size:10px;color:var(--ink4);font-family:var(--font-body);">dept bayesian</div>`:''}</td><td>${statusBadge(displayRating)}</td></tr>`;
   }).join('');
   document.querySelectorAll('.mentor-name-btn').forEach(btn=>{btn.addEventListener('click',function(){openMentorModal(this.getAttribute('data-mentor'),this.getAttribute('data-dept')||null);});});
 }
