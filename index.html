@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>  
 <style>
 :root {
   --bg:#fdf8ed;--bg2:#f5e9c8;--surface:#ffffff;--surface2:#fdf4e0;
@@ -114,29 +114,6 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-siz
 .filter-chip{padding:7px 16px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--ink3);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all 0.15s;box-shadow:var(--shadow-sm);}
 .filter-chip:hover{color:var(--gold-dark);border-color:var(--gold-mid);}
 .filter-chip.active{background:var(--gold-dark);color:#fde9a0;border-color:var(--gold-dark);box-shadow:0 2px 8px rgba(120,80,0,0.25);}
-
-/* ── Month dropdown styles ── */
-#monthFilterSelect{
-  appearance:none;-webkit-appearance:none;
-  padding:7px 30px 7px 14px;
-  border-radius:20px;
-  border:1.5px solid var(--border2);
-  background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c48a00'/%3E%3C/svg%3E") no-repeat right 10px center;
-  color:var(--ink);
-  font-family:var(--font-body);
-  font-size:12px;font-weight:500;
-  cursor:pointer;
-  box-shadow:var(--shadow-sm);
-  outline:none;
-  transition:border-color 0.15s,box-shadow 0.15s;
-  min-width:160px;
-}
-#monthFilterSelect:hover,#monthFilterSelect:focus{
-  border-color:var(--gold-mid);
-  box-shadow:0 0 0 3px rgba(196,138,0,0.15);
-}
-#monthFilterSelect:disabled{opacity:0.5;cursor:not-allowed;}
-#monthFilterSelect option[value="all"]{font-weight:600;}
 
 .panel{display:none;flex-direction:column;gap:22px;}
 .panel.active{display:flex;}
@@ -298,8 +275,6 @@ tbody tr{transition:background 0.12s;}
 .trend-source-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#065f46;}
 .trend-source-badge.simulated{background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.35);color:#78350f;}
 
-.landing-sortable{cursor:pointer;user-select:none;}
-.landing-sortable:hover{background:#7a4f00 !important;}
 
 .mentor-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px);}
 .mentor-modal-overlay.open{display:flex;animation:fadeUp 0.25s cubic-bezier(.22,1,.36,1);}
@@ -353,20 +328,6 @@ tbody tr{transition:background 0.12s;}
 
 .mentor-name-btn{background:none;border:none;color:#7a4f00;font-size:13.5px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-family:var(--font-body);padding:0;text-align:left;}
 .mentor-name-btn:hover{color:#5c3600;}
-
-/* Month chip in summary bar */
-.month-active-chip{
-  display:none;
-  padding:3px 10px;
-  border-radius:20px;
-  background:rgba(245,200,66,0.25);
-  border:1px solid rgba(245,200,66,0.5);
-  color:#fde9a0;
-  font-size:11px;
-  font-weight:600;
-  margin-left:auto;
-}
-.month-active-chip.visible{display:inline-flex;align-items:center;gap:5px;}
 
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--bg2);}
@@ -450,7 +411,7 @@ tbody tr{transition:background 0.12s;}
       <div class="mm-q-grid" id="mmQRows"></div>
     </div>
     <div class="mm-section">
-      <div class="mm-section-title">Strength &amp; concern analysis</div>
+      <div class="mm-section-title">Strength & concern analysis</div>
       <div class="mm-sw-grid" id="mmSwGrid"></div>
       <div id="mmNeutralWrap" style="margin-top:10px;"></div>
     </div>
@@ -476,7 +437,7 @@ tbody tr{transition:background 0.12s;}
   <div class="topbar-right">
     <div class="college-dropdown-wrap" id="collegeDropdownWrap">
       <button class="college-select-btn" id="collegeSelectBtn" onclick="toggleDropdown()">
-        <span class="btn-label" id="collegeBtnLabel">College Overview</span>
+        <span class="btn-label" id="collegeBtnLabel">Select College</span>
         <span class="caret">▼</span>
       </button>
       <div class="college-dropdown" id="collegeDropdown"></div>
@@ -488,11 +449,10 @@ tbody tr{transition:background 0.12s;}
 
 <aside class="sidebar" id="mainSidebar">
   <div class="nav-group-label">Analytics</div>
-  <div class="nav-item active" id="navOverview" onclick="selectOverview()"><span class="nav-icon">⊞</span> College Overview</div>
-  <div class="nav-item hidden-nav" id="navSummary" onclick="showDetailPanel('summary',this)"><span class="nav-icon">▦</span> Summary</div>
-  <div class="nav-item hidden-nav" id="navMentors" onclick="showDetailPanel('mentors',this)"><span class="nav-icon">◉</span> Mentor Performance</div>
-  <div class="nav-item hidden-nav" id="navNps" onclick="showDetailPanel('nps',this)"><span class="nav-icon">◈</span> NPS Analysis</div>
-  <div class="nav-item hidden-nav" id="navTrends" onclick="showDetailPanel('trends',this)"><span class="nav-icon">▶︎</span> Trend Over Time</div>
+  <div class="nav-item active" id="navSummary" onclick="showDetailPanel('summary',this)"><span class="nav-icon">▦</span> Summary</div>
+  <div class="nav-item" id="navMentors" onclick="showDetailPanel('mentors',this)"><span class="nav-icon">◉</span> Mentor Performance</div>
+  <div class="nav-item" id="navNps" onclick="showDetailPanel('nps',this)"><span class="nav-icon">◈</span> NPS Analysis</div>
+  <div class="nav-item" id="navTrends" onclick="showDetailPanel('trends',this)"><span class="nav-icon">▶︎</span> Trend Over Time</div>
   <div class="sidebar-footer">
     <div class="sidebar-footer-label">Data Source</div>
     <div class="sidebar-footer-val">Google Sheets (Live)</div>
@@ -515,89 +475,36 @@ tbody tr{transition:background 0.12s;}
   <div class="page-header">
     <div>
       <div class="page-eyebrow" id="pageEyebrow">Performance Analytics</div>
-      <div class="page-title" id="pageTitle">College Overview</div>
-      <div class="page-sub" id="pageSub">All colleges · Live data from Google Sheets</div>
+      <div class="page-title" id="pageTitle">Overview</div>
+      <div class="page-sub" id="pageSub">Loading dashboard data…</div>
     </div>
-    <!-- ══ MENTOR FILTERS: Department chips + Month dropdown ══ -->
-    <div id="mentorFilterBar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;visibility:hidden;">
-      <!-- Department Filter Chips -->
-      <div class="filter-row" id="deptFilterRow" style="flex:1;min-width:0;">
-        <button class="filter-chip active" onclick="setDeptFilter('all',this)">All Depts</button>
-      </div>
-      <!-- Month Filter Dropdown (single select, no nested select) -->
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-        <label for="monthFilterSelect" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink3);">Month</label>
-        <select id="monthFilterSelect" onchange="setMonthFilter(this.value)">
-          <option value="all">All Months (Average)</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- LANDING PANEL -->
-  <div class="panel active" id="panel-landing">
-    <div style="background:linear-gradient(135deg,#4a2800 0%,#7a4f00 60%,#a06e00 100%);border-radius:var(--radius);padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-md);">
-      <div>
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(253,233,160,0.65);margin-bottom:6px;">FacePrep Campus · Performance Analytics</div>
-        <div style="font-family:var(--font-display);font-size:26px;color:#fde9a0;line-height:1.2;">College Overview Dashboard</div>
-        <div style="font-size:13px;color:rgba(253,233,160,0.6);margin-top:5px;" id="landingHeroSub">Loading data from Google Sheets…</div>
-      </div>
-      <div style="display:flex;gap:24px;flex-wrap:wrap;">
-        <div style="text-align:center;"><div style="font-family:var(--font-display);font-size:28px;color:#f5c842;line-height:1;" id="lhsTotal">—</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(253,233,160,0.5);margin-top:4px;">Total Colleges</div></div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink3);margin-bottom:-8px;">
-      <span id="landingStatusDot" style="width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block;animation:spin 1s linear infinite;"></span>
-      <span id="landingStatusText">Fetching data…</span>
-    </div>
-    <div id="landingErrorBox" style="display:none;background:var(--rose-lt);border:1px solid var(--rose);border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;color:var(--rose);line-height:1.7;"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:-8px;">
-      <div style="flex:1;min-width:160px;position:relative;">
-        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink3);font-size:15px;pointer-events:none;">⌕</span>
-        <input type="text" id="landingSearch" placeholder="Search college…" oninput="landingFilterRender()"
-          style="width:100%;padding:8px 12px 8px 30px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;background:var(--surface);color:var(--ink);outline:none;">
-      </div>
-      <select id="landingSort" onchange="landingFilterRender()"
-        style="padding:8px 12px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;background:var(--surface);color:var(--ink);cursor:pointer;">
-        <option value="rank">Sort by Rank</option>
-        <option value="rating_desc">Rating ↓</option>
-        <option value="rating_asc">Rating ↑</option>
-        <option value="nps_desc">NPS ↓</option>
-        <option value="nps_asc">NPS ↑</option>
-        <option value="hit_desc">Hit Ratio ↓</option>
-        <option value="hit_asc">Hit Ratio ↑</option>
-        <option value="name">College Name A–Z</option>
-      </select>
-    </div>
-    <div class="card" style="padding:0;overflow:hidden;">
-      <div class="table-wrap">
-        <table id="landingTable" style="table-layout:fixed;">
-          <thead>
-            <tr>
-              <th style="width:52px;text-align:center;">Rank</th>
-              <th style="width:36%;" class="landing-sortable" onclick="landingToggleSort('name')">College Name<span id="larr-name" style="margin-left:4px;opacity:0.7;font-size:11px;"></span></th>
-              <th style="width:16%;text-align:center;" class="landing-sortable" onclick="landingToggleSort('rating')">Avg Rating<span id="larr-rating" style="margin-left:4px;opacity:0.7;font-size:11px;"></span></th>
-              <th style="width:13%;text-align:center;" class="landing-sortable" onclick="landingToggleSort('nps')">NPS Score<span id="larr-nps" style="margin-left:4px;opacity:0.7;font-size:11px;"></span></th>
-              <th style="width:22%;text-align:center;" class="landing-sortable" onclick="landingToggleSort('hit')">Hit Ratio<span id="larr-hit" style="margin-left:4px;opacity:0.7;font-size:11px;"></span></th>
-              <th style="width:13%;text-align:center;">Detail</th>
-            </tr>
-          </thead>
-          <tbody id="landingTableBody">
-            <tr><td colspan="6" style="text-align:center;padding:48px;color:var(--ink3);">Loading data…</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="padding:10px 20px;font-size:11px;color:var(--ink4);border-top:1px solid var(--border);">Click "View" to open full college detail.</div>
+    <div class="filter-row" id="deptFilterRow" style="visibility:hidden">
+      <button class="filter-chip active" onclick="setDeptFilter('all',this)">All</button>
     </div>
   </div>
 
   <!-- SUMMARY PANEL -->
   <div class="panel" id="panel-summary">
     <div class="metrics-row">
-      <div class="metric-card"><div class="metric-label">Avg Overall Rating</div><div class="metric-value" id="avgRating">—</div></div>
-      <div class="metric-card"><div class="metric-label">Hit Ratio</div><div class="metric-value" id="hitRatioMetric">—</div><div class="metric-sub" id="hitRatioSub">—</div></div>
-      <div class="metric-card"><div class="metric-label">Mentors Tracked</div><div class="metric-value" id="mentorCount">—</div><div class="metric-sub" id="mentorSub">—</div></div>
-      <div class="metric-card"><div class="metric-label">Top Performer</div><div class="metric-value" id="subjectCount" style="font-size:20px;">—</div><div class="metric-sub" id="subjectSub">—</div></div>
+      <div class="metric-card">
+        <div class="metric-label">Avg Overall Rating</div>
+        <div class="metric-value" id="avgRating">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Hit Ratio</div>
+        <div class="metric-value" id="hitRatioMetric">—</div>
+        <div class="metric-sub" id="hitRatioSub">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Mentors Tracked</div>
+        <div class="metric-value" id="mentorCount">—</div>
+        <div class="metric-sub" id="mentorSub">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Top Performer</div>
+        <div class="metric-value" id="subjectCount" style="font-size:20px;">—</div>
+        <div class="metric-sub" id="subjectSub">—</div>
+      </div>
     </div>
     <div class="charts-grid">
       <div class="card">
@@ -629,9 +536,21 @@ tbody tr{transition:background 0.12s;}
           <div class="nps-score-label" id="npsScoreLabel">No data loaded</div>
         </div>
         <div class="nps-segment-row">
-          <div class="nps-seg promoters"><div class="nps-seg-val" id="npsPromotersCount">—</div><div class="nps-seg-lbl">Promoters</div><div class="nps-seg-pct" id="npsPromotersPct">score 9–10</div></div>
-          <div class="nps-seg passives"><div class="nps-seg-val" id="npsPassivesCount">—</div><div class="nps-seg-lbl">Passives</div><div class="nps-seg-pct" id="npsPassivesPct">score 7–8</div></div>
-          <div class="nps-seg detractors"><div class="nps-seg-val" id="npsDetractorsCount">—</div><div class="nps-seg-lbl">Detractors</div><div class="nps-seg-pct" id="npsDetractorsPct">score 1–6</div></div>
+          <div class="nps-seg promoters">
+            <div class="nps-seg-val" id="npsPromotersCount">—</div>
+            <div class="nps-seg-lbl">Promoters</div>
+            <div class="nps-seg-pct" id="npsPromotersPct">score 9–10</div>
+          </div>
+          <div class="nps-seg passives">
+            <div class="nps-seg-val" id="npsPassivesCount">—</div>
+            <div class="nps-seg-lbl">Passives</div>
+            <div class="nps-seg-pct" id="npsPassivesPct">score 7–8</div>
+          </div>
+          <div class="nps-seg detractors">
+            <div class="nps-seg-val" id="npsDetractorsCount">—</div>
+            <div class="nps-seg-lbl">Detractors</div>
+            <div class="nps-seg-pct" id="npsDetractorsPct">score 1–6</div>
+          </div>
         </div>
       </div>
     </div>
@@ -643,10 +562,7 @@ tbody tr{transition:background 0.12s;}
       <div id="mentorTableSummaryBar" style="display:flex;align-items:center;gap:24px;padding:14px 22px;background:linear-gradient(135deg,#4a2800,#7a4f00);flex-wrap:wrap;">
         <div style="color:#fde9a0;font-size:12px;"><span style="opacity:0.6;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px;">Global Mean</span><span id="mtSumGlobalMean" style="font-family:'DM Serif Display',Georgia,serif;font-size:18px;">—</span></div>
         <div style="color:#fde9a0;font-size:12px;"><span style="opacity:0.6;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px;">Σ Total Responses</span><span id="mtSumTotalResp" style="font-family:'DM Serif Display',Georgia,serif;font-size:18px;">—</span></div>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-          <span id="mtMonthChip" class="month-active-chip"></span>
-          <span class="badge badge-gold" id="mentorTableCountBadge">—</span>
-        </div>
+        <div style="margin-left:auto;"><span class="badge badge-gold" id="mentorTableCountBadge">—</span></div>
       </div>
     </div>
     <div id="deptStatsPanelWrap" style="display:none;"></div>
@@ -681,11 +597,13 @@ tbody tr{transition:background 0.12s;}
         <div class="nps-stat-block"><div class="nps-stat-val" id="npsTotalBig">—</div><div class="nps-stat-lbl">Total Responses</div></div>
       </div>
     </div>
+
     <div class="nps-hero-row">
       <div class="nps-hero-card promoters-card"><div class="nps-hero-val" id="npsP_count">—</div><div class="nps-hero-lbl">Promoters</div><div class="nps-hero-pct" id="npsP_pct">—</div><div class="nps-hero-range">Score 9 – 10</div></div>
       <div class="nps-hero-card passives-card"><div class="nps-hero-val" id="npsN_count">—</div><div class="nps-hero-lbl">Passives</div><div class="nps-hero-pct" id="npsN_pct">—</div><div class="nps-hero-range">Score 7 – 8</div></div>
       <div class="nps-hero-card detractors-card"><div class="nps-hero-val" id="npsD_count">—</div><div class="nps-hero-lbl">Detractors</div><div class="nps-hero-pct" id="npsD_pct">—</div><div class="nps-hero-range">Score 1 – 6</div></div>
     </div>
+
     <div class="card">
       <div class="card-header">
         <div class="card-title">NPS Follow-up Questions</div>
@@ -695,32 +613,42 @@ tbody tr{transition:background 0.12s;}
         <div style="text-align:center;padding:32px;color:var(--ink3);grid-column:1/-1;">Select a college to view follow-up question data</div>
       </div>
     </div>
+
+    <!-- STUDENT VOICE -->
     <div class="card" id="studentVoiceCard">
       <div class="card-header" style="margin-bottom:0;flex-wrap:wrap;gap:10px;">
         <div style="flex:1;min-width:0;">
           <div class="card-title">Student Voice — Open-ended Feedback</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:3px;">Q6 · <em>What do you like about the FACE Prep program?</em> &nbsp;|&nbsp; Q7 · <em>What would you like FACE Prep to improve next year?</em></div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:3px;">
+            Q6 · <em>What do you like about the FACE Prep program?</em> &nbsp;|&nbsp;
+            Q7 · <em>What would you like FACE Prep to improve next year?</em>
+          </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
           <span class="badge badge-gold" id="svBadge">—</span>
           <button id="svRegenBtn" onclick="runStudentVoice()" style="display:none;padding:6px 14px;background:var(--surface);color:var(--ink3);border:1px solid var(--border2);border-radius:20px;font-family:var(--font-body);font-size:11px;cursor:pointer;">↻ Regenerate</button>
         </div>
       </div>
+
       <div id="svIdle" style="margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 0;">
         <div style="font-size:30px;color:var(--gold-mid);">✦</div>
         <div style="font-size:13px;color:var(--ink3);text-align:center;max-width:400px;line-height:1.7;">Select a college to generate an AI-powered point-by-point summary of student opinions from Q6 and Q7.</div>
       </div>
+
       <div id="svLoading" style="display:none;margin-top:20px;padding:32px 0;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
         <div style="width:36px;height:36px;border:3px solid var(--gold-light);border-top-color:var(--gold-mid);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
         <div style="font-size:13px;color:var(--ink3);" id="svLoadingText">Reading student responses…</div>
       </div>
+
       <div id="svResult" style="display:none;margin-top:20px;">
         <div id="svGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;"></div>
         <div id="svMeta" style="font-size:11px;color:var(--ink3);margin-top:10px;text-align:right;"></div>
       </div>
+
       <div id="svError" style="display:none;margin-top:16px;background:var(--rose-lt);border:1px solid var(--rose);border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;color:var(--rose);line-height:1.7;"></div>
     </div>
-  </div>
+
+  </div><!-- end panel-nps -->
 
   <!-- TREND OVER TIME PANEL -->
   <div class="panel" id="panel-trends">
@@ -736,15 +664,46 @@ tbody tr{transition:background 0.12s;}
       </div>
     </div>
     <div class="trend-kpi-row">
-      <div class="trend-kpi-card"><div class="trend-kpi-label">Avg Rating</div><div class="trend-kpi-value" id="tkpiRating">—</div><div class="trend-kpi-delta flat" id="tkpiRatingDelta">—</div><div class="trend-kpi-cycle" id="tkpiRatingCycle">—</div></div>
-      <div class="trend-kpi-card"><div class="trend-kpi-label">NPS Index</div><div class="trend-kpi-value" id="tkpiNps">—</div><div class="trend-kpi-delta flat" id="tkpiNpsDelta">—</div><div class="trend-kpi-cycle" id="tkpiNpsCycle">—</div></div>
-      <div class="trend-kpi-card" style="border-top:3px solid #10b981;"><div class="trend-kpi-label" style="color:#065f46;">Hit Ratio</div><div class="trend-kpi-value" id="tkpiHitRatio" style="color:#065f46;">—</div><div class="trend-kpi-delta flat" id="tkpiHitRatioDelta">—</div><div class="trend-kpi-cycle" id="tkpiHitRatioCycle">—</div></div>
-      <div class="trend-kpi-card"><div class="trend-kpi-label">Promoter %</div><div class="trend-kpi-value" id="tkpiPromo">—</div><div class="trend-kpi-delta flat" id="tkpiPromoDelta">—</div><div class="trend-kpi-cycle" id="tkpiPromoCycle">—</div></div>
+      <div class="trend-kpi-card">
+        <div class="trend-kpi-label">Avg Rating</div>
+        <div class="trend-kpi-value" id="tkpiRating">—</div>
+        <div class="trend-kpi-delta flat" id="tkpiRatingDelta">—</div>
+        <div class="trend-kpi-cycle" id="tkpiRatingCycle">—</div>
+      </div>
+      <div class="trend-kpi-card">
+        <div class="trend-kpi-label">NPS Index</div>
+        <div class="trend-kpi-value" id="tkpiNps">—</div>
+        <div class="trend-kpi-delta flat" id="tkpiNpsDelta">—</div>
+        <div class="trend-kpi-cycle" id="tkpiNpsCycle">—</div>
+      </div>
+      <div class="trend-kpi-card" style="border-top:3px solid #10b981;">
+        <div class="trend-kpi-label" style="color:#065f46;">Hit Ratio</div>
+        <div class="trend-kpi-value" id="tkpiHitRatio" style="color:#065f46;">—</div>
+        <div class="trend-kpi-delta flat" id="tkpiHitRatioDelta">—</div>
+        <div class="trend-kpi-cycle" id="tkpiHitRatioCycle">—</div>
+      </div>
+      <div class="trend-kpi-card">
+        <div class="trend-kpi-label">Promoter %</div>
+        <div class="trend-kpi-value" id="tkpiPromo">—</div>
+        <div class="trend-kpi-delta flat" id="tkpiPromoDelta">—</div>
+        <div class="trend-kpi-cycle" id="tkpiPromoCycle">—</div>
+      </div>
     </div>
     <div class="trend-charts-grid">
-      <div class="trend-chart-card full-width"><div class="card-header"><div class="card-title" id="trendRatingCardTitle">Average Rating Trend · Sep 2025 – Apr 2026</div><span class="badge badge-gold" id="trendRatingBadge">—</span></div><div style="position:relative;width:100%;height:260px;"><canvas id="trendRatingChart"></canvas></div></div>
-      <div class="trend-chart-card"><div class="card-header"><div class="card-title">NPS Index Trend</div><span class="badge badge-primary" id="trendNpsBadge">—</span></div><div style="position:relative;width:100%;height:240px;"><canvas id="trendNpsChart"></canvas></div></div>
-      <div class="trend-chart-card"><div class="card-header"><div class="card-title">Hit Ratio Trend</div><span class="badge badge-green" id="trendHitRatioBadge">—</span></div><div style="position:relative;width:100%;height:240px;"><canvas id="trendHitRatioChart"></canvas></div></div>
+      <div class="trend-chart-card full-width">
+        <div class="card-header">
+          <div class="card-title" id="trendRatingCardTitle">Average Rating Trend · Sep 2025 – Apr 2026</div>
+          <span class="badge badge-gold" id="trendRatingBadge">—</span></div>
+        <div style="position:relative;width:100%;height:260px;"><canvas id="trendRatingChart"></canvas></div>
+      </div>
+      <div class="trend-chart-card">
+        <div class="card-header"><div class="card-title">NPS Index Trend</div><span class="badge badge-primary" id="trendNpsBadge">—</span></div>
+        <div style="position:relative;width:100%;height:240px;"><canvas id="trendNpsChart"></canvas></div>
+      </div>
+      <div class="trend-chart-card">
+        <div class="card-header"><div class="card-title">Hit Ratio Trend</div><span class="badge badge-green" id="trendHitRatioBadge">—</span></div>
+        <div style="position:relative;width:100%;height:240px;"><canvas id="trendHitRatioChart"></canvas></div>
+      </div>
     </div>
     <div class="card">
       <div class="card-header"><div class="card-title">NPS Segment Trend — Promoters / Passives / Detractors (%)</div><span class="badge badge-gold" id="trendSegBadge">—</span></div>
@@ -756,7 +715,9 @@ tbody tr{transition:background 0.12s;}
       </div>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-title" id="trendTableCardTitle">Month-by-Month Summary Table · Sep 2025 – Apr 2026</div><span class="badge badge-gold" id="trendTableBadge">—</span></div>
+      <div class="card-header">
+        <div class="card-title" id="trendTableCardTitle">Month-by-Month Summary Table · Sep 2025 – Apr 2026</div>
+        <span class="badge badge-gold" id="trendTableBadge">—</span></div>
       <div class="trend-cycle-table-wrap">
         <table class="trend-cycle-table">
           <thead><tr><th>Month</th><th>Responses</th><th>Avg Rating</th><th>Δ Rating</th><th>NPS Index</th><th>Δ NPS</th><th>Hit Ratio</th><th>Δ Hit Ratio</th><th>Promoters %</th><th>Detractors %</th><th>Mentors</th></tr></thead>
@@ -774,6 +735,32 @@ tbody tr{transition:background 0.12s;}
 /* ═══════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════ */
+/*
+  DASHBOARD MAINTENANCE NOTES
+  ---------------------------
+  1) Department "All" option:
+     The department filter uses the string 'all' as an internal sentinel value.
+     It does not fetch new data and it is not treated as a real department.
+     When selected, mentor tables and modal KPIs use the mentor's already-built
+     aggregate totals across every department. Selecting a real department switches
+     the render functions to deptQs/deptRatings maps built during processSheetData().
+
+  2) Adding a new future month:
+     Preferred path: add a month/cycle column in the monthly Google Sheet or add a row
+     in the dedicated trend sheet. The dashboard automatically reads and sorts it.
+     Fallback path: when no month/cycle data exists, append the label to FIXED_CYCLES
+     and add common spellings to MONTH_ALIAS_MAP.
+
+  3) Optimization techniques used:
+     - Google Sheet rows are parsed once per refresh.
+     - Derived structures are cached in MENTORS, NPS_DATA, DEPT_LIST, and TREND_DATA.
+     - Charts are initialized once, then updated instead of recreated repeatedly.
+     - Department filters re-render from cached maps without another network request.
+     - Dedicated trend sheets are loaded only for colleges configured in DEDICATED_TREND_SHEETS.
+*/
+
+// Each college maps to one worksheet/tab in the live Google Sheet.
+// To add a new college, append {name:'College Name', gid:'Sheet GID'} here.
 const COLLEGES=[
   {name:"Kamaraj College",gid:"0"},{name:"Kamaraj Women's College",gid:"1140723423"},
   {name:"SDNB Vaishnav College for Women",gid:"340022065"},{name:"Patrician College of Arts & Science",gid:"1890731138"},
@@ -790,7 +777,6 @@ const COLLEGES=[
 ];
 
 const SHEET_ID='19HsWARl8RFNZ6nc-bUCBKKEN39JkQVxCBfbNCUSe2_4';
-const LANDING_GID='2051331186';
 
 const DEDICATED_TREND_SHEETS={
   'Rathinam College of Arts & Science':{sheetId:'1nDMDazG090HPikkrSohUYXmYfZiO-MaREitGlJHwoKc',gids:['0','1707229573']},
@@ -817,10 +803,15 @@ const DEDICATED_TREND_SHEETS={
   'Asian School of Business':{sheetId:'1vw_fZ_5RkWNLbe0Y5pTdkplwVZYl2TVZ0LvI4ogezK8',gids:['0']}
 };
 
+// Fallback trend months used only when a sheet has no month/cycle column and no dedicated trend sheet.
+// To add a future month, append it here, then add common spellings to MONTH_ALIAS_MAP below.
+// If your future sheet already contains a month/cycle column, the dashboard reads it automatically.
 const FIXED_CYCLES=['Sep 2025','Oct 2025','Nov 2025','Dec 2025','Jan 2026','Feb 2026','Mar 2026','Apr 2026'];
+// Normalizes month labels from spreadsheets so 'Sept', 'Sep-2025', and 'September 2025' sort as the same month.
+// Future month example: add 'may 2026':'May 2026', 'may':'May 2026', and 'may-2026':'May 2026'.
 const MONTH_ALIAS_MAP={
   'sep 2025':'Sep 2025','september 2025':'Sep 2025','sep-2025':'Sep 2025','sep':'Sep 2025',
-  'sept 2025':'Sep 2025','sept-2025':'Sep 2025','sept':'Sep 2025',
+  'sept 2025':'Sep 2025','sept-2025':'Sep 2025','sept':'Sep 2025',   // ← ADD THIS LINE
   'oct 2025':'Oct 2025','october 2025':'Oct 2025','oct-2025':'Oct 2025','oct':'Oct 2025',
   'nov 2025':'Nov 2025','november 2025':'Nov 2025','nov-2025':'Nov 2025','nov':'Nov 2025',
   'dec 2025':'Dec 2025','december 2025':'Dec 2025','dec-2025':'Dec 2025','dec':'Dec 2025',
@@ -836,8 +827,19 @@ const Q_LABELS=['Session clarity','Professional behavior','Problem-solving with 
 /* ═══════════════════════════════════════════
    FUZZY COLLEGE NAME MATCHING
 ═══════════════════════════════════════════ */
-function normCollegeName(s){return(s||'').toLowerCase().replace(/\b(deemed to be university|deemed university|university|college|institute|institution|school|arts and science|arts & science|of|and|&|the)\b/g,'').replace(/[^a-z0-9]/g,'').trim();}
-function findCollegeIndex(sheetName){let idx=COLLEGES.findIndex(c=>c.name===sheetName);if(idx>=0)return idx;idx=COLLEGES.findIndex(c=>c.name.toLowerCase()===sheetName.toLowerCase());if(idx>=0)return idx;const normSheet=normCollegeName(sheetName);idx=COLLEGES.findIndex(c=>normCollegeName(c.name)===normSheet);if(idx>=0)return idx;idx=COLLEGES.findIndex(c=>{const nc=normCollegeName(c.name);return nc.includes(normSheet)||normSheet.includes(nc);});return idx;}
+function normCollegeName(s){
+  return (s||'').toLowerCase()
+    .replace(/\b(deemed to be university|deemed university|university|college|institute|institution|school|arts and science|arts & science|of|and|&|the)\b/g,'')
+    .replace(/[^a-z0-9]/g,'').trim();
+}
+function findCollegeIndex(sheetName){
+  let idx=COLLEGES.findIndex(c=>c.name===sheetName);if(idx>=0)return idx;
+  idx=COLLEGES.findIndex(c=>c.name.toLowerCase()===sheetName.toLowerCase());if(idx>=0)return idx;
+  const normSheet=normCollegeName(sheetName);
+  idx=COLLEGES.findIndex(c=>normCollegeName(c.name)===normSheet);if(idx>=0)return idx;
+  idx=COLLEGES.findIndex(c=>{const nc=normCollegeName(c.name);return nc.includes(normSheet)||normSheet.includes(nc);});
+  return idx;
+}
 
 /* ═══════════════════════════════════════════
    MENTOR MODAL — KPI ENGINE
@@ -849,6 +851,7 @@ const Q_DEFS=[
   {key:'Q4',label:'Doubt clearing & student support',w_strength:20,w_tei:25,w_ssi:20},
   {key:'Q5',label:'Learning effectiveness',         w_strength:15,w_tei:10,w_ssi:20}
 ];
+
 const Q_ANALYSIS_TEXT=[
   {hp:'Students highly appreciated the mentor\'s session delivery, clarity, and structured teaching approach.',mp:'Students provided positive feedback regarding the mentor\'s session organization and clarity.',n:'Student feedback indicates moderate satisfaction with the mentor\'s session delivery and structure.',mn:'Students identified improvement opportunities in the mentor\'s session clarity and teaching structure.',hn:'Students reported major concerns regarding the mentor\'s session organization and clarity of explanation.'},
   {hp:'Students strongly appreciated the mentor\'s professionalism and classroom conduct.',mp:'The mentor maintained good professional behavior during the sessions.',n:'Students reported stable professional conduct with minor areas for improvement.',mn:'Students observed certain concerns related to professional behavior and classroom interaction.',hn:'Students highlighted significant concerns regarding the mentor\'s professional conduct during sessions.'},
@@ -856,6 +859,7 @@ const Q_ANALYSIS_TEXT=[
   {hp:'Students highly appreciated the mentor\'s support in resolving doubts and handling queries effectively.',mp:'The mentor was positively rated for student support and doubt clarification.',n:'Students expressed moderate satisfaction with the mentor\'s responsiveness to doubts and questions.',mn:'Students identified improvement opportunities in doubt clarification and student interaction.',hn:'Students reported inadequate support in resolving doubts and handling academic queries.'},
   {hp:'Students reported strong improvement in understanding and skill development through the mentor\'s sessions.',mp:'Students positively rated the learning effectiveness of the mentor\'s sessions.',n:'Student feedback indicates moderate improvement in learning outcomes and skill development.',mn:'Students suggested improvements in learning effectiveness and practical understanding.',hn:'Students reported limited improvement in learning outcomes from the mentor\'s sessions.'}
 ];
+
 function mmClassify(pct){if(pct>=90)return'hp';if(pct>=80)return'mp';if(pct>=70)return'n';if(pct>=60)return'mn';return'hn';}
 function mmClassLabel(cls){return{hp:'High positive',mp:'Moderate positive',n:'Neutral',mn:'Moderate negative',hn:'High negative'}[cls];}
 function mmClassStyle(cls){const m={hp:{bg:'#d1fae5',color:'#065f46',border:'#6ee7b7'},mp:{bg:'#dbeafe',color:'#1e40af',border:'#93c5fd'},n:{bg:'var(--bg2)',color:'var(--ink3)',border:'var(--border2)'},mn:{bg:'#fef3c7',color:'#78350f',border:'#fcd34d'},hn:{bg:'#fee2e2',color:'#7f1d1d',border:'#fca5a5'}};return m[cls]||m.n;}
@@ -872,18 +876,15 @@ function mmVerdictConfig(strength,tei){if(strength>=80&&tei>=80)return{icon:'✦
 /* ═══════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════ */
-let currentMode='overview';
+let currentMode='detail';
 let currentCollege=null;
 let MENTORS=[],TABLE_DATA=[],DEPT_LIST=[],DEPT_STUDENT_COUNT={};
 let NPS_DATA={scores:[],promoters:0,passives:0,detractors:0,npsIndex:null,avg:0,total:0,scoreFreq:{}};
 let TREND_DATA={cycles:[],hasCycleCol:false,hasDedicatedSheet:false,cycleStats:{},mentorCycleStats:{}};
 let currentDetailPanel='summary',currentDeptFilter='all';
-// currentMonthFilter: 'all' = average of all months; or a specific cycle e.g. 'Jan 2026'
-let currentMonthFilter='all';
 let chartInstances={};
 let trendRatingInst=null,trendNpsInst=null,trendHitRatioInst=null,trendSegInst=null;
 let needleAnimRAF=null;
-let landingData=[],landingSortState={col:'rank',dir:'asc'},landingLoaded=false;
 let svRunning=false;
 
 /* ═══════════════════════════════════════════
@@ -897,20 +898,37 @@ function closeMobileSidebar(){document.getElementById('mainSidebar').classList.r
 ═══════════════════════════════════════════ */
 function buildDropdown(){
   const dd=document.getElementById('collegeDropdown');
-  const ovItem=document.createElement('div');ovItem.className='college-dropdown-item overview-item active';ovItem.id='dditem-overview';ovItem.innerHTML='<span class="item-dot"></span> ⊞ College Overview (All)';ovItem.onclick=()=>selectOverview();dd.appendChild(ovItem);
-  const sep=document.createElement('div');sep.style.cssText='padding:6px 16px 4px;font-size:9.5px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink4);border-bottom:1px solid var(--border);';sep.textContent='Individual Colleges';dd.appendChild(sep);
-  COLLEGES.forEach((c,i)=>{const hasTrend=!!DEDICATED_TREND_SHEETS[c.name];const el=document.createElement('div');el.className='college-dropdown-item'+(hasTrend?' has-trend':'');el.id=`dditem-${i}`;el.innerHTML=`<span class="item-dot"></span>${c.name}`;el.onclick=()=>selectCollege(i);dd.appendChild(el);});
+  dd.innerHTML='';
+
+  // The dropdown contains only deployable dashboard views for individual college sheets.
+  COLLEGES.forEach((c,i)=>{
+    const hasTrend=!!DEDICATED_TREND_SHEETS[c.name];
+    const el=document.createElement('div');
+    el.className='college-dropdown-item'+(hasTrend?' has-trend':'');
+    el.id=`dditem-${i}`;
+    el.innerHTML=`<span class="item-dot"></span>${c.name}`;
+    el.onclick=()=>selectCollege(i);
+    dd.appendChild(el);
+  });
 }
 function toggleDropdown(){const dd=document.getElementById('collegeDropdown'),btn=document.getElementById('collegeSelectBtn');const isOpen=dd.classList.contains('open');dd.classList.toggle('open',!isOpen);btn.classList.toggle('open',!isOpen);if(!isOpen)document.addEventListener('click',closeDropdownOutside,{once:true,capture:true});}
 function closeDropdownOutside(e){if(!document.getElementById('collegeDropdownWrap').contains(e.target)){document.getElementById('collegeDropdown').classList.remove('open');document.getElementById('collegeSelectBtn').classList.remove('open');}}
-function selectOverview(){document.querySelectorAll('.college-dropdown-item').forEach(el=>el.classList.remove('active'));document.getElementById('dditem-overview').classList.add('active');document.getElementById('collegeBtnLabel').textContent='College Overview';document.getElementById('logoInstitutionName').textContent='FacePrep Campus';document.getElementById('collegeDropdown').classList.remove('open');document.getElementById('collegeSelectBtn').classList.remove('open');closeMobileSidebar();switchToOverviewMode();}
-function selectCollege(idx){currentCollege=COLLEGES[idx];document.querySelectorAll('.college-dropdown-item').forEach(el=>el.classList.remove('active'));const item=document.getElementById(`dditem-${idx}`);if(item)item.classList.add('active');document.getElementById('collegeBtnLabel').textContent=currentCollege.name;document.getElementById('logoInstitutionName').textContent=currentCollege.name;document.getElementById('collegeDropdown').classList.remove('open');document.getElementById('collegeSelectBtn').classList.remove('open');closeMobileSidebar();switchToDetailMode();loadSheetData();}
+function selectCollege(idx){
+  currentCollege=COLLEGES[idx];
+  document.querySelectorAll('.college-dropdown-item').forEach(el=>el.classList.remove('active'));
+  const item=document.getElementById(`dditem-${idx}`);if(item)item.classList.add('active');
+  document.getElementById('collegeBtnLabel').textContent=currentCollege.name;
+  document.getElementById('logoInstitutionName').textContent=currentCollege.name;
+  document.getElementById('collegeDropdown').classList.remove('open');
+  document.getElementById('collegeSelectBtn').classList.remove('open');
+  closeMobileSidebar();
+  showDetailPanel('summary',document.getElementById('navSummary'));
+  loadSheetData();
+}
 
 /* ═══════════════════════════════════════════
-   MODE SWITCHING
+   DASHBOARD TAB SWITCHING
 ═══════════════════════════════════════════ */
-function switchToOverviewMode(){currentMode='overview';document.getElementById('navOverview').classList.remove('hidden-nav');document.getElementById('navOverview').classList.add('active');['navSummary','navMentors','navNps','navTrends'].forEach(id=>{document.getElementById(id).classList.add('hidden-nav');document.getElementById(id).classList.remove('active');});document.getElementById('mentorFilterBar').style.visibility='hidden';document.getElementById('pageEyebrow').textContent='Performance Analytics';document.getElementById('pageTitle').textContent='College Overview';document.getElementById('pageSub').textContent='All colleges · Live data from Google Sheets';document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('panel-landing').classList.add('active');if(!landingLoaded)landingFetchData();}
-function switchToDetailMode(){currentMode='detail';document.getElementById('navOverview').classList.add('hidden-nav');document.getElementById('navOverview').classList.remove('active');['navSummary','navMentors','navNps','navTrends'].forEach(id=>{document.getElementById(id).classList.remove('hidden-nav');});showDetailPanel('summary',document.getElementById('navSummary'));}
 function showDetailPanel(id,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
@@ -922,7 +940,7 @@ function showDetailPanel(id,el){
   document.getElementById('pageTitle').textContent=meta[id][1];
   document.getElementById('pageSub').textContent=currentCollege?currentCollege.name:'—';
   document.querySelector('.page-header').style.display=id==='trends'?'none':'flex';
-  document.getElementById('mentorFilterBar').style.visibility=id==='mentors'?'visible':'hidden';
+  document.getElementById('deptFilterRow').style.visibility=id==='mentors'?'visible':'hidden';
   if(id==='mentors'&&MENTORS.length){renderMentorTable();renderDeptStatsPanel(currentDeptFilter);}
   if(id==='nps'&&NPS_DATA.total){renderNPSPanel();}
   if(id==='trends'&&TREND_DATA.cycles.length)renderTrendPanel();
@@ -932,17 +950,18 @@ function showDetailPanel(id,el){
 /* ═══════════════════════════════════════════
    REFRESH
 ═══════════════════════════════════════════ */
-function refreshData(){const btn=document.getElementById('refreshBtn');btn.classList.add('spinning');btn.disabled=true;const p=currentMode==='overview'?landingFetchData():loadSheetData();p.finally(()=>setTimeout(()=>{btn.classList.remove('spinning');btn.disabled=false;},600));}
+function refreshData(){
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');btn.disabled=true;
+  const p=loadSheetData();
+  p.finally(()=>setTimeout(()=>{btn.classList.remove('spinning');btn.disabled=false;},600));
+}
 
 /* ═══════════════════════════════════════════
    DETAIL — SHEET LOAD
 ═══════════════════════════════════════════ */
 async function loadSheetData(){
   if(!currentCollege)return;
-  // Reset month filter when switching colleges
-  currentMonthFilter='all';
-  const selMF=document.getElementById('monthFilterSelect');
-  if(selMF){selMF.value='all';}
   const overlay=document.getElementById('loadingOverlay'),errEl=document.getElementById('errorMessage');
   document.getElementById('loadingText').textContent=`Loading data for ${currentCollege.name}...`;
   overlay.classList.remove('hidden');errEl.classList.remove('show');
@@ -978,13 +997,13 @@ function processDedicatedTrendData(rows,collegeName){
   const cycleStats={};const cycles=[];
   rows.forEach(row=>{if(!colMonth)return;const rawMonth=(row[colMonth]||'').trim();if(!rawMonth)return;const cycleName=MONTH_ALIAS_MAP[rawMonth.toLowerCase()]||rawMonth;if(cycles.indexOf(cycleName)===-1)cycles.push(cycleName);const pv=s=>{if(!s||!row[s])return null;const v=parseFloat(row[s].toString().replace('%','').trim());return isNaN(v)?null:v;};const iv=s=>{if(!s||!row[s])return null;const v=parseInt(row[s].toString().replace('%','').trim(),10);return isNaN(v)?null:v;};const responses=iv(colResponses);const ratingAvg=pv(colRating);const npsIndex=colNps?iv(colNps):null;const expected=iv(colExpected);let hitRatio=pv(colHitRatio);if(hitRatio===null&&responses!==null&&expected!==null&&expected>0)hitRatio=parseFloat(((responses/expected)*100).toFixed(1));const mentorCount=iv(colMentors);const students=iv(colStudents);const promoterCount=iv(colPromoters);const passiveCount=iv(colPassives);const detractorCount=iv(colDetractors);const totalForPct=(promoterCount||0)+(passiveCount||0)+(detractorCount||0);let promoterPct=totalForPct>0?parseFloat(((promoterCount/totalForPct)*100).toFixed(1)):null;let passivePct=totalForPct>0?parseFloat(((passiveCount/totalForPct)*100).toFixed(1)):null;let detractorPct=totalForPct>0?parseFloat(((detractorCount/totalForPct)*100).toFixed(1)):null;let finalNps=npsIndex;if(finalNps!==null&&Math.abs(finalNps)<=1)finalNps=Math.round(finalNps*100);cycleStats[cycleName]={cycle:cycleName,responses:responses||0,students:students||0,ratingAvg,npsIndex:finalNps,hitRatio,promoterPct,passivePct,detractorPct,promoterCount:promoterCount||0,passiveCount:passiveCount||0,detractorCount:detractorCount||0,mentorCount:mentorCount||MENTORS.length,mentorRatings:{}};});
   const MONTH_ORDER={'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12};function parseCycleDate(c){const parts=c.split(' ');return(parseInt(parts[1])||0)*100+(MONTH_ORDER[parts[0]]||0);}const sortedCycles=[...cycles].sort((a,b)=>parseCycleDate(a)-parseCycleDate(b));
-  TREND_DATA={cycles:sortedCycles,hasCycleCol:true,hasDedicatedSheet:true,cycleStats,mentorCycleStats:{}};
-  buildTrendCycleButtons();
+  TREND_DATA={cycles:sortedCycles,hasCycleCol:true,hasDedicatedSheet:true,cycleStats,mentorCycleStats:{}};buildTrendCycleButtons();
 }
 
+// Single-pass parser: ratings, NPS, mentor KPIs, department maps, and trend cycle buckets are built in one loop.
+// This avoids repeated scans over the Google Sheet rows and keeps GitHub Pages performance smooth.
 function processSheetData(rows){
-  const isFullLoad=!window.RAW_SHEET_ROWS;
-  if(isFullLoad||rows===window.RAW_SHEET_ROWS){window.RAW_SHEET_ROWS=rows;}
+  window.RAW_SHEET_ROWS=rows;
   TABLE_DATA=[];
   const deptStudentCount={};
   const mentorStats={},deptSet=new Set(),subjectSet=new Set(),npsScores=[];
@@ -1019,14 +1038,13 @@ function processSheetData(rows){
   NPS_DATA={scores:npsScores,promoters,passives,detractors,npsIndex,avg,median,total,scoreFreq};
   const allRatings=TABLE_DATA.map(r=>r.rating);const globalMean=allRatings.length>0?allRatings.reduce((a,b)=>a+b,0)/allRatings.length:0;const totalAllResponses=allRatings.length;
   MENTORS=Object.values(mentorStats).map(m=>{const avg=m.ratings.reduce((a,b)=>a+b,0)/m.ratings.length;const totalResponses=m.ratings.length;const avgXResponses=avg*totalResponses;const mentorCount=Object.values(mentorStats).length||1;
-    const C=totalAllResponses/mentorCount;
-    const bayesianScore=((globalMean*C)+(avg*totalResponses))/(C+totalResponses);return{name:m.name,depts:Array.from(m.depts),rating:parseFloat(avg.toFixed(2)),avgXResponses:parseFloat(avgXResponses.toFixed(2)),bayesianRating:parseFloat(bayesianScore.toFixed(7)),subjects:m.subjects.size,responses:totalResponses,qs:m.qs,deptQs:m.deptQs,deptRatings:m.deptRatings};}).sort((a,b)=>b.bayesianRating-a.bayesianRating);
+const C=totalAllResponses/mentorCount;
+const bayesianScore=((globalMean*C)+(avg*totalResponses))/(C+totalResponses);return{name:m.name,depts:Array.from(m.depts),rating:parseFloat(avg.toFixed(2)),avgXResponses:parseFloat(avgXResponses.toFixed(2)),bayesianRating:parseFloat(bayesianScore.toFixed(7)),subjects:m.subjects.size,responses:totalResponses,qs:m.qs,deptQs:m.deptQs,deptRatings:m.deptRatings};}).sort((a,b)=>b.bayesianRating-a.bayesianRating);
   MENTORS.forEach((m,idx,arr)=>{if(idx===0){m.rank=1;}else if(m.bayesianRating===arr[idx-1].bayesianRating){m.rank=arr[idx-1].rank;}else{m.rank=idx+1;}m.percentile=MENTORS.length>1?Math.round((1-idx/(MENTORS.length-1))*100):100;});
   DEPT_LIST=Array.from(deptSet).sort();updateDeptFilters();
   const tot=TABLE_DATA.length;const avgR=tot>0?TABLE_DATA.reduce((s,r)=>s+r.rating,0)/tot:0;
   document.getElementById('avgRating').textContent=avgR>0?`${avgR.toFixed(1)} / 5`:'—';
-  const _landingMatch=currentCollege?landingData.find(r=>r.college===currentCollege.name):null;const _hitRatio=_landingMatch&&_landingMatch.hit!==null?_landingMatch.hit:null;
-  document.getElementById('hitRatioMetric').textContent=_hitRatio!==null?`${_hitRatio.toFixed(1)}%`:'—';
+  document.getElementById('hitRatioMetric').textContent='—';
   document.getElementById('hitRatioSub').textContent=`${rows.length} responses · ${DEPT_LIST.length} depts`;
   document.getElementById('mentorCount').textContent=MENTORS.length;document.getElementById('mentorSub').textContent=`Across ${DEPT_LIST.length} departments`;
   const topMentor=MENTORS[0]||null;
@@ -1060,6 +1078,7 @@ function getNpsLabel(index){if(index===null)return'No NPS data in sheet';if(inde
 function statusBadge(r){if(r>=4.3)return'<span class="badge badge-gold">Excellent</span>';if(r>=4.0)return'<span class="badge badge-green">Good</span>';if(r>=3.5)return'<span class="badge badge-amber">Average</span>';return'<span class="badge badge-rose">Needs work</span>';}
 function getStatusColor(r){if(r>=4.3)return'#10b981';if(r>=4.0)return'#c48a00';if(r>=3.5)return'#f59e0b';return'#ef4444';}
 function deptStyle(d){if(!d)return{color:'#4a2e00',bg:'#fff3cc',border:'#e6b84a'};if(d.includes('BCA'))return{color:'#5c3600',bg:'#fde9a0',border:'#e6b84a'};if(d.includes('BBA'))return{color:'#3d2200',bg:'#f5c842',border:'#c48a00'};return{color:'#4a2e00',bg:'#fff3cc',border:'#e6b84a'};}
+// Department filter internals: 'all' is not a department name. It means use each mentor's pre-aggregated totals across every department.
 function getMentorDeptQs(mentor,dept){if(!dept||dept==='all')return mentor.qs;return mentor.deptQs[dept]||[{y:0,n:0},{y:0,n:0},{y:0,n:0},{y:0,n:0},{y:0,n:0}];}
 function getMentorDeptRating(mentor,dept){if(!dept||dept==='all')return mentor.rating;const rs=mentor.deptRatings[dept];if(!rs||!rs.length)return mentor.rating;return parseFloat((rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(2));}
 function getMentorDeptResponses(mentor,dept){if(!dept||dept==='all')return mentor.responses;const rs=mentor.deptRatings[dept];return rs?rs.length:0;}
@@ -1067,116 +1086,9 @@ function getMentorDeptResponses(mentor,dept){if(!dept||dept==='all')return mento
 /* ═══════════════════════════════════════════
    DEPT FILTER
 ═══════════════════════════════════════════ */
-function updateDeptFilters(){
-  const fr=document.getElementById('deptFilterRow');
-  fr.innerHTML='<button class="filter-chip active" onclick="setDeptFilter(\'all\',this)">All Depts</button>';
-  DEPT_LIST.forEach(dept=>{
-    const btn=document.createElement('button');
-    btn.className='filter-chip';
-    btn.textContent=dept;
-    btn.onclick=function(){setDeptFilter(dept,this);};
-    fr.appendChild(btn);
-  });
-  // Populate month filter dropdown dynamically from TREND_DATA.cycles
-  populateMonthFilterDropdown();
-}
-
-/* ── MONTH DROPDOWN: populated from TREND_DATA.cycles ── */
-function populateMonthFilterDropdown(){
-  const sel=document.getElementById('monthFilterSelect');
-  if(!sel)return;
-  const cycles=TREND_DATA.cycles||[];
-  // Rebuild options — always include "All Months" first
-  sel.innerHTML='<option value="all">All Months (Average)</option>';
-  cycles.forEach(cycle=>{
-    const opt=document.createElement('option');
-    opt.value=cycle;
-    opt.textContent=cycle;
-    sel.appendChild(opt);
-  });
-  // Restore current selection if still valid
-  if(currentMonthFilter!=='all'&&cycles.includes(currentMonthFilter)){
-    sel.value=currentMonthFilter;
-  }else{
-    sel.value='all';
-    currentMonthFilter='all';
-  }
-}
-
-/* ── Called when user changes the month dropdown ── */
-function setMonthFilter(val){
-  currentMonthFilter=val;
-  // Update the visible chip in the summary bar
-  const chip=document.getElementById('mtMonthChip');
-  if(chip){
-    if(val&&val!=='all'){chip.textContent='📅 '+val;chip.classList.add('visible');}
-    else{chip.textContent='';chip.classList.remove('visible');}
-  }
-  if(currentDetailPanel==='mentors'){
-    rebuildMentorsForMonth(val);
-    renderMentorTable();
-    renderDeptStatsPanel(currentDeptFilter);
-  }
-}
-
-/* ── Rebuild MENTORS array filtered to a specific month cycle ── */
-function rebuildMentorsForMonth(month){
-  if(!month||month==='all'){
-    // Restore full aggregated data from saved raw rows
-    if(window.RAW_SHEET_ROWS){
-      const saved=window.RAW_SHEET_ROWS;
-      processSheetData(saved);
-      window.RAW_SHEET_ROWS=saved; // processSheetData may overwrite, restore
-    }
-    return;
-  }
-  // Find the cycle column in raw rows
-  if(!window.RAW_SHEET_ROWS||!window.RAW_SHEET_ROWS.length)return;
-  const cycleColNames=['cycle','batch','term','semester','month','period'];
-  let cycleCol=null;
-  const keys=Object.keys(window.RAW_SHEET_ROWS[0]);
-  cycleCol=keys.find(k=>cycleColNames.includes(k.toLowerCase().trim()))||null;
-
-  if(cycleCol){
-    // Filter rows matching this month/cycle
-    const filteredRows=window.RAW_SHEET_ROWS.filter(row=>{
-      const raw=(row[cycleCol]||'').trim();
-      const mapped=MONTH_ALIAS_MAP[raw.toLowerCase()]||raw;
-      return mapped===month||raw===month;
-    });
-    if(!filteredRows.length){MENTORS=[];return;}
-    const saved=window.RAW_SHEET_ROWS;
-    processSheetData(filteredRows);
-    window.RAW_SHEET_ROWS=saved; // restore after processSheetData
-  } else {
-    // No cycle column — try dedicated sheet's mentorRatings
-    if(TREND_DATA.hasDedicatedSheet&&TREND_DATA.cycleStats[month]&&TREND_DATA.cycleStats[month].mentorRatings){
-      buildMentorsFromCycleStat(month);
-    }
-    // else: no filtering possible, keep current MENTORS
-  }
-}
-
-/* ── Build lightweight MENTORS from dedicated sheet cycle stats ── */
-function buildMentorsFromCycleStat(month){
-  const stat=TREND_DATA.cycleStats[month];
-  if(!stat||!stat.mentorRatings)return;
-  const allRatings=Object.values(stat.mentorRatings);
-  const globalMean=allRatings.length?allRatings.reduce((a,b)=>a+b,0)/allRatings.length:0;
-  const C=allRatings.length||1;
-  MENTORS=Object.entries(stat.mentorRatings).map(([name,avg])=>{
-    const bayesianScore=(globalMean*C+avg*1)/(C+1);
-    return{name,depts:['—'],rating:parseFloat(avg.toFixed(2)),avgXResponses:parseFloat(avg.toFixed(2)),bayesianRating:parseFloat(bayesianScore.toFixed(7)),subjects:1,responses:1,qs:[{y:0,n:0},{y:0,n:0},{y:0,n:0},{y:0,n:0},{y:0,n:0}],deptQs:{},deptRatings:{}};
-  }).sort((a,b)=>b.bayesianRating-a.bayesianRating);
-  MENTORS.forEach((m,idx,arr)=>{if(idx===0){m.rank=1;}else if(m.bayesianRating===arr[idx-1].bayesianRating){m.rank=arr[idx-1].rank;}else{m.rank=idx+1;}m.percentile=MENTORS.length>1?Math.round((1-idx/(MENTORS.length-1))*100):100;});
-}
-
-function setDeptFilter(val,btn){
-  currentDeptFilter=val;
-  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  if(currentDetailPanel==='mentors'){renderMentorTable();renderDeptStatsPanel(val);}
-}
+function updateDeptFilters(){const fr=document.getElementById('deptFilterRow');fr.innerHTML='<button class="filter-chip active" onclick="setDeptFilter(\'all\',this)">All</button>';DEPT_LIST.forEach(dept=>{const btn=document.createElement('button');btn.className='filter-chip';btn.textContent=dept;btn.onclick=function(){setDeptFilter(dept,this);};fr.appendChild(btn);});}
+// Called by the department chips. Passing 'all' clears the department scope without re-fetching data.
+function setDeptFilter(val,btn){currentDeptFilter=val;document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));if(btn)btn.classList.add('active');if(currentDetailPanel==='mentors'){renderMentorTable();renderDeptStatsPanel(val);}}
 
 /* ═══════════════════════════════════════════
    DEPT STATS PANEL
@@ -1228,8 +1140,16 @@ function renderDeptStatsPanel(dept){
 function calcDeptBayesian(mentor,dept){
   const deptMentors=MENTORS.filter(m=>m.depts.some(d=>d===dept));
   let deptTotalWeightedRating=0,deptTotalResponses=0,deptMentorCount=0;
-  deptMentors.forEach(m=>{const rs=m.deptRatings[dept];if(rs&&rs.length){deptTotalWeightedRating+=rs.reduce((a,b)=>a+b,0);deptTotalResponses+=rs.length;deptMentorCount++;}});
+  deptMentors.forEach(m=>{
+    const rs=m.deptRatings[dept];
+    if(rs&&rs.length){
+      deptTotalWeightedRating+=rs.reduce((a,b)=>a+b,0);
+      deptTotalResponses+=rs.length;
+      deptMentorCount++;
+    }
+  });
   const deptGlobalMean=deptTotalResponses>0?deptTotalWeightedRating/deptTotalResponses:0;
+  // C = average responses per mentor (correct Bayesian threshold)
   const C=deptMentorCount>0?deptTotalResponses/deptMentorCount:0;
   const mentorDeptRs=mentor.deptRatings[dept]||[];
   const mentorDeptResponses=mentorDeptRs.length;
@@ -1237,9 +1157,16 @@ function calcDeptBayesian(mentor,dept){
   if(C===0||mentorDeptResponses===0)return mentorDeptAvg;
   return(deptGlobalMean*C+mentorDeptAvg*mentorDeptResponses)/(C+mentorDeptResponses);
 }
+function updateHitRatioMetric(){
+  // Hit Ratio is available from dedicated trend sheets or future cycle-summary columns.
+  const latestCycle=TREND_DATA.cycles&&TREND_DATA.cycles.length?TREND_DATA.cycles[TREND_DATA.cycles.length-1]:null;
+  const latestStats=latestCycle?TREND_DATA.cycleStats[latestCycle]:null;
+  const hitRatio=latestStats&&latestStats.hitRatio!==null&&latestStats.hitRatio!==undefined?latestStats.hitRatio:null;
+  document.getElementById('hitRatioMetric').textContent=hitRatio!==null?`${hitRatio.toFixed(1)}%`:'—';
+  if(hitRatio!==null){document.getElementById('hitRatioSub').textContent=`Latest: ${latestCycle}`;}
+}
 function renderAllData(){
-  populateMonthFilterDropdown();
-  renderMentorTable();renderNPSSummary();renderNPSPanel();renderTrendPanel();renderDeptStatsPanel(currentDeptFilter);
+  renderMentorTable();renderNPSSummary();renderNPSPanel();renderTrendPanel();renderDeptStatsPanel(currentDeptFilter);updateHitRatioMetric();
   if(!chartInstances._summaryInit){initSummaryCharts();chartInstances._summaryInit=true;}else updateSummaryCharts();
 }
 
@@ -1265,7 +1192,7 @@ function renderNPSSummary(){
 }
 
 /* ═══════════════════════════════════════════
-   NPS FULL PANEL
+   NPS FULL PANEL  — FIX: npsAvgBig + npsMedianBig now exist in HTML
 ═══════════════════════════════════════════ */
 function renderNPSPanel(){
   const{promoters,passives,detractors,npsIndex,avg:npsAvg,median,total}=NPS_DATA;
@@ -1281,86 +1208,199 @@ function renderNPSPanel(){
 }
 
 /* ═══════════════════════════════════════════
-   YES/NO FOLLOWUP
+   YES/NO FOLLOWUP (Q2-Q5)
 ═══════════════════════════════════════════ */
 function renderNPSFollowupYesNo(){
   const wrap=document.getElementById('npsFollowupYesNoGrid');const badge=document.getElementById('npsFollowupYesNoBadge');
   if(!wrap)return;
   if(!window.RAW_SHEET_ROWS||window.RAW_SHEET_ROWS.length===0){wrap.innerHTML='<div style="text-align:center;padding:32px;color:var(--ink3);grid-column:1/-1;">No data available.</div>';if(badge)badge.textContent='No data';return;}
+
   const followupQuestions=[
     {id:'campus',   col:'nps_fu1_campusSatisfied',  label:'Campus experience',    question:'Satisfied with overall campus experience — classroom, infrastructure & Wi-Fi?'},
     {id:'classroom',col:'nps_fu2_classroomSatisfied',label:'Classroom engagement', question:'Satisfied with classroom engagement — faculty quality & content relevance?'},
     {id:'skill',    col:'nps_fu3_skillDev',          label:'Skill development',    question:'Happy with skill development progress so far?'},
     {id:'placement',col:'nps_fu4_placement',         label:'Placement opportunities',question:'Happy with placement opportunities available?'}
   ];
-  const questionStats={};followupQuestions.forEach(q=>{questionStats[q.id]={yes:0,no:0,total:0};});
-  window.RAW_SHEET_ROWS.forEach(row=>{followupQuestions.forEach(q=>{const answer=(row[q.col]||'').trim();if(answer==='Yes'){questionStats[q.id].yes++;questionStats[q.id].total++;}else if(answer==='No'){questionStats[q.id].no++;questionStats[q.id].total++;}});});
+
+  const questionStats={};
+  followupQuestions.forEach(q=>{questionStats[q.id]={yes:0,no:0,total:0};});
+
+  window.RAW_SHEET_ROWS.forEach(row=>{
+    followupQuestions.forEach(q=>{
+      const answer=(row[q.col]||'').trim();
+      if(answer==='Yes'){questionStats[q.id].yes++;questionStats[q.id].total++;}
+      else if(answer==='No'){questionStats[q.id].no++;questionStats[q.id].total++;}
+    });
+  });
+
   const totalResponses=window.RAW_SHEET_ROWS.length;
   if(badge)badge.textContent=totalResponses>0?`${totalResponses} total responses`:'No data';
-  function palette(p){if(p>=70)return{bar:'#1D9E75',statusBg:'#EAF3DE',statusColor:'#3B6D11',statusLabel:'Excellent',pctColor:'#1D9E75'};if(p>=50)return{bar:'#BA7517',statusBg:'#FAEEDA',statusColor:'#633806',statusLabel:'Good',pctColor:'#BA7517'};return{bar:'#E24B4A',statusBg:'#FCEBEB',statusColor:'#791F1F',statusLabel:'Needs improvement',pctColor:'#E24B4A'};}
-  wrap.style.gridTemplateColumns='repeat(2,1fr)';wrap.style.gap='10px';wrap.style.marginTop='4px';
-  wrap.innerHTML=followupQuestions.map(q=>{const stats=questionStats[q.id];const total=stats.yes+stats.no;const yesPct=total>0?Math.round(stats.yes/total*100):0;const noPct=100-yesPct;const pal=palette(yesPct);return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow-sm);"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;"><div style="flex:1;min-width:0;"><div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:3px;">${q.label}</div><div style="font-size:12px;color:var(--ink3);line-height:1.45;">${q.question}</div></div><span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;background:${pal.statusBg};color:${pal.statusColor};">${total>0?pal.statusLabel:'No data'}</span></div><div style="display:flex;flex-direction:column;gap:7px;"><div style="display:flex;align-items:center;gap:10px;"><span style="font-size:12px;color:var(--ink3);width:26px;flex-shrink:0;">Yes</span><div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;"><div style="width:0%;height:100%;border-radius:4px;background:${pal.bar};transition:width 0.9s cubic-bezier(.22,1,.36,1);" data-w="${yesPct}" class="nfq-bar-fill"></div></div><span style="font-size:12px;font-weight:500;color:var(--ink);min-width:20px;text-align:right;">${stats.yes}</span></div><div style="display:flex;align-items:center;gap:10px;"><span style="font-size:12px;color:var(--ink3);width:26px;flex-shrink:0;">No</span><div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;"><div style="width:0%;height:100%;border-radius:4px;background:var(--border2);transition:width 0.9s cubic-bezier(.22,1,.36,1);" data-w="${noPct}" class="nfq-bar-fill"></div></div><span style="font-size:12px;font-weight:500;color:var(--ink);min-width:20px;text-align:right;">${stats.no}</span></div></div><div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);"><div><div style="font-size:24px;font-weight:600;line-height:1;color:${total>0?pal.pctColor:'var(--ink3)'};">${total>0?yesPct+'%':'—'}</div><div style="font-size:11px;color:var(--ink3);margin-top:3px;">${total>0?`positive · ${total} responses`:'no responses found'}</div></div></div></div>`;}).join('');
-  setTimeout(()=>{document.querySelectorAll('.nfq-bar-fill').forEach(el=>{el.style.width=el.getAttribute('data-w')+'%';});},100);
+
+  function palette(p){
+    if(p>=70)return{bar:'#1D9E75',statusBg:'#EAF3DE',statusColor:'#3B6D11',statusLabel:'Excellent',pctColor:'#1D9E75'};
+    if(p>=50)return{bar:'#BA7517',statusBg:'#FAEEDA',statusColor:'#633806',statusLabel:'Good',pctColor:'#BA7517'};
+    return{bar:'#E24B4A',statusBg:'#FCEBEB',statusColor:'#791F1F',statusLabel:'Needs improvement',pctColor:'#E24B4A'};
+  }
+
+  wrap.style.gridTemplateColumns='repeat(2,1fr)';
+  wrap.style.gap='10px';
+  wrap.style.marginTop='4px';
+
+  wrap.innerHTML=followupQuestions.map(q=>{
+    const stats=questionStats[q.id];
+    const total=stats.yes+stats.no;
+    const yesPct=total>0?Math.round(stats.yes/total*100):0;
+    const noPct=100-yesPct;
+    const pal=palette(yesPct);
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow-sm);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:3px;">${q.label}</div>
+          <div style="font-size:12px;color:var(--ink3);line-height:1.45;">${q.question}</div>
+        </div>
+        <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;background:${pal.statusBg};color:${pal.statusColor};">${total>0?pal.statusLabel:'No data'}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:12px;color:var(--ink3);width:26px;flex-shrink:0;">Yes</span>
+          <div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;">
+            <div style="width:0%;height:100%;border-radius:4px;background:${pal.bar};transition:width 0.9s cubic-bezier(.22,1,.36,1);" data-w="${yesPct}" class="nfq-bar-fill"></div>
+          </div>
+          <span style="font-size:12px;font-weight:500;color:var(--ink);min-width:20px;text-align:right;">${stats.yes}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:12px;color:var(--ink3);width:26px;flex-shrink:0;">No</span>
+          <div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;">
+            <div style="width:0%;height:100%;border-radius:4px;background:var(--border2);transition:width 0.9s cubic-bezier(.22,1,.36,1);" data-w="${noPct}" class="nfq-bar-fill"></div>
+          </div>
+          <span style="font-size:12px;font-weight:500;color:var(--ink);min-width:20px;text-align:right;">${stats.no}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);">
+        <div>
+          <div style="font-size:24px;font-weight:600;line-height:1;color:${total>0?pal.pctColor:'var(--ink3)'};">${total>0?yesPct+'%':'—'}</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:3px;">${total>0?`positive · ${total} responses`:'no responses found'}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  setTimeout(()=>{
+    document.querySelectorAll('.nfq-bar-fill').forEach(el=>{
+      el.style.width=el.getAttribute('data-w')+'%';
+    });
+  },100);
 }
 
 /* ═══════════════════════════════════════════
    STUDENT VOICE
 ═══════════════════════════════════════════ */
-function svShow(state){document.getElementById('svIdle').style.display=state==='idle'?'flex':'none';document.getElementById('svLoading').style.display=state==='loading'?'flex':'none';document.getElementById('svResult').style.display=state==='result'?'block':'none';document.getElementById('svError').style.display=state==='error'?'block':'none';}
+function svShow(state){
+  document.getElementById('svIdle').style.display=state==='idle'?'flex':'none';
+  document.getElementById('svLoading').style.display=state==='loading'?'flex':'none';
+  document.getElementById('svResult').style.display=state==='result'?'block':'none';
+  document.getElementById('svError').style.display=state==='error'?'block':'none';
+}
+
 async function runStudentVoice(){
   if(svRunning)return;
   if(!window.RAW_SHEET_ROWS||!window.RAW_SHEET_ROWS.length){svShow('idle');return;}
   const q6Responses=[];const q7Responses=[];
-  window.RAW_SHEET_ROWS.forEach(row=>{const q6=(row['nps_likes']||row['Q6']||row['q6']||row['Q6_response']||row['q6_response']||row['What do you like about FACE Prep']||row['Q6 - What do you like about the FACE Prep program?']||'').trim();const q7=(row['nps_improve']||row['Q7']||row['q7']||row['Q7_response']||row['q7_response']||row['What would you like FACE Prep to improve']||row['Q7 - What is one thing you would like FACE Prep to improve in next year?']||'').trim();if(!q6){const k=Object.keys(row).find(k=>k.toLowerCase().includes('q6')||k.toLowerCase().includes('like about'));if(k&&row[k]&&row[k].trim())q6Responses.push(row[k].trim());}else if(q6){q6Responses.push(q6);}if(!q7){const k=Object.keys(row).find(k=>k.toLowerCase().includes('q7')||k.toLowerCase().includes('improve'));if(k&&row[k]&&row[k].trim())q7Responses.push(row[k].trim());}else if(q7){q7Responses.push(q7);}});
-  const validQ6=q6Responses.filter(r=>r&&r.length>2);const validQ7=q7Responses.filter(r=>r&&r.length>2);
-  if(!validQ6.length&&!validQ7.length){const firstRow=window.RAW_SHEET_ROWS[0]||{};const allKeys=Object.keys(firstRow);const q6Key=allKeys.find(k=>/nps_likes|q6|like about|what.*like/i.test(k));const q7Key=allKeys.find(k=>/nps_improve|q7|improve|what.*would|one thing/i.test(k));if(q6Key)window.RAW_SHEET_ROWS.forEach(r=>{if(r[q6Key]&&r[q6Key].trim().length>2)validQ6.push(r[q6Key].trim());});if(q7Key)window.RAW_SHEET_ROWS.forEach(r=>{if(r[q7Key]&&r[q7Key].trim().length>2)validQ7.push(r[q7Key].trim());});}
-  if(!validQ6.length&&!validQ7.length){document.getElementById('svBadge').textContent='No Q6/Q7 data';svShow('idle');const idleMsg=document.getElementById('svIdle').querySelector('div:last-child');if(idleMsg)idleMsg.textContent='No Q6 or Q7 open-ended responses found in the sheet. Make sure columns are named Q6 and Q7.';return;}
-  svRunning=true;svShow('loading');document.getElementById('svBadge').textContent=`${validQ6.length} Q6 · ${validQ7.length} Q7`;document.getElementById('svRegenBtn').style.display='none';document.getElementById('svLoadingText').textContent='Analysing student responses with AI…';
-  const sample=arr=>arr.length>120?arr.sort(()=>Math.random()-0.5).slice(0,120):arr;const q6Sample=sample([...validQ6]);const q7Sample=sample([...validQ7]);const collegeName=currentCollege?currentCollege.name:'this college';
+  window.RAW_SHEET_ROWS.forEach(row=>{
+    const q6=(row['nps_likes']||row['Q6']||row['q6']||row['Q6_response']||row['q6_response']||row['What do you like about FACE Prep']||row['Q6 - What do you like about the FACE Prep program?']||'').trim();
+    const q7=(row['nps_improve']||row['Q7']||row['q7']||row['Q7_response']||row['q7_response']||row['What would you like FACE Prep to improve']||row['Q7 - What is one thing you would like FACE Prep to improve in next year?']||'').trim();
+    if(!q6){const k=Object.keys(row).find(k=>k.toLowerCase().includes('q6')||k.toLowerCase().includes('like about'));if(k&&row[k]&&row[k].trim())q6Responses.push(row[k].trim());}else if(q6){q6Responses.push(q6);}
+    if(!q7){const k=Object.keys(row).find(k=>k.toLowerCase().includes('q7')||k.toLowerCase().includes('improve'));if(k&&row[k]&&row[k].trim())q7Responses.push(row[k].trim());}else if(q7){q7Responses.push(q7);}
+  });
+  const validQ6=q6Responses.filter(r=>r&&r.length>2);
+  const validQ7=q7Responses.filter(r=>r&&r.length>2);
+  if(!validQ6.length&&!validQ7.length){
+    const firstRow=window.RAW_SHEET_ROWS[0]||{};
+    const allKeys=Object.keys(firstRow);
+    const q6Key=allKeys.find(k=>/nps_likes|q6|like about|what.*like/i.test(k));
+    const q7Key=allKeys.find(k=>/nps_improve|q7|improve|what.*would|one thing/i.test(k));
+    if(q6Key)window.RAW_SHEET_ROWS.forEach(r=>{if(r[q6Key]&&r[q6Key].trim().length>2)validQ6.push(r[q6Key].trim());});
+    if(q7Key)window.RAW_SHEET_ROWS.forEach(r=>{if(r[q7Key]&&r[q7Key].trim().length>2)validQ7.push(r[q7Key].trim());});
+  }
+  if(!validQ6.length&&!validQ7.length){
+    document.getElementById('svBadge').textContent='No Q6/Q7 data';
+    svShow('idle');
+    const idleMsg=document.getElementById('svIdle').querySelector('div:last-child');
+    if(idleMsg)idleMsg.textContent='No Q6 or Q7 open-ended responses found in the sheet. Make sure columns are named Q6 and Q7.';
+    return;
+  }
+  svRunning=true;
+  svShow('loading');
+  document.getElementById('svBadge').textContent=`${validQ6.length} Q6 · ${validQ7.length} Q7`;
+  document.getElementById('svRegenBtn').style.display='none';
+  document.getElementById('svLoadingText').textContent='Analysing student responses with AI…';
+  const sample=arr=>arr.length>120?arr.sort(()=>Math.random()-0.5).slice(0,120):arr;
+  const q6Sample=sample([...validQ6]);const q7Sample=sample([...validQ7]);
+  const collegeName=currentCollege?currentCollege.name:'this college';
   const prompt=`You are analysing real student feedback from ${collegeName} about the FACE Prep program.\n\nBelow are student responses to two open-ended questions:\n\nQ6 — What do you like about the FACE Prep program? (${q6Sample.length} responses):\n${q6Sample.map((r,i)=>`${i+1}. ${r}`).join('\n')}\n\nQ7 — What is one thing you would like FACE Prep to improve next year? (${q7Sample.length} responses):\n${q7Sample.map((r,i)=>`${i+1}. ${r}`).join('\n')}\n\nAnalyse all responses carefully and return a JSON object with exactly this structure:\n{\n  "likes": ["point 1", "point 2", "point 3", "point 4", "point 5", "point 6"],\n  "improvements": ["point 1", "point 2", "point 3", "point 4", "point 5", "point 6"]\n}\n\nRules:\n- Each array must have 5 to 8 bullet points\n- Each point must be a single clear sentence (15-30 words) capturing a distinct theme from the actual student responses\n- Do NOT invent themes — only summarise what students actually wrote\n- Do NOT include any text outside the JSON object\n- Use plain language, no markdown formatting inside the strings`;
   try{
     const GROQ_KEY='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';
     const response=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${GROQ_KEY}`},body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:prompt}],max_tokens:1000,temperature:0.4})});
     if(!response.ok){const errText=await response.text();throw new Error(`Groq API error ${response.status}: ${errText.slice(0,200)}`);}
     const data=await response.json();const rawText=data.choices?.[0]?.message?.content||'';
-    let parsed;try{const clean=rawText.replace(/```json|```/g,'').trim();parsed=JSON.parse(clean);}catch(e){const match=rawText.match(/\{[\s\S]*\}/);if(match)parsed=JSON.parse(match[0]);else throw new Error('Could not parse AI response as JSON');}
+    let parsed;
+    try{const clean=rawText.replace(/```json|```/g,'').trim();parsed=JSON.parse(clean);}catch(e){const match=rawText.match(/\{[\s\S]*\}/);if(match)parsed=JSON.parse(match[0]);else throw new Error('Could not parse AI response as JSON');}
     const likes=Array.isArray(parsed.likes)?parsed.likes:[];const improvements=Array.isArray(parsed.improvements)?parsed.improvements:[];
     renderStudentVoiceResult(likes,improvements,validQ6.length,validQ7.length);
-  }catch(err){console.error('Student Voice error:',err);svShow('error');document.getElementById('svError').innerHTML=`<strong>Could not generate analysis</strong><br>${err.message}`;document.getElementById('svRegenBtn').style.display='inline-block';}
-  finally{svRunning=false;}
+  }catch(err){
+    console.error('Student Voice error:',err);svShow('error');
+    document.getElementById('svError').innerHTML=`<strong>Could not generate analysis</strong><br>${err.message}`;
+    document.getElementById('svRegenBtn').style.display='inline-block';
+  }finally{svRunning=false;}
 }
+
 function renderStudentVoiceResult(likes,improvements,q6Count,q7Count){
   const grid=document.getElementById('svGrid');
-  function buildCol(items,type){const isLikes=type==='likes';const title=isLikes?'What students love about FACE Prep':'What students wants to Improve';const qLabel=isLikes?`Q6 · ${q6Count} responses`:`Q7 · ${q7Count} responses`;const colClass=isLikes?'likes':'improve';const accentColor=isLikes?'#065f46':'#78350f';const points=items.map(p=>`<div class="sv-point"><span class="sv-point-dot"></span><span class="sv-point-text">${p}</span></div>`).join('');return`<div class="sv-col ${colClass}"><div class="sv-col-header"><div style="display:inline-flex;align-items:center;justify-content:center;width:10px;height:10px;border-radius:50%;background:${accentColor};flex-shrink:0;margin-top:2px;"></div><div><div class="sv-col-title">${title}</div><div class="sv-col-sub">${qLabel}</div></div></div>${items.length?points:'<div class="sv-no-data">No clear themes found in the responses.</div>'}</div>`;}
+  function buildCol(items,type){
+    const isLikes=type==='likes';
+    const title=isLikes?'What students love about FACE Prep':'What students wants to Improve';
+    const qLabel=isLikes?`Q6 · ${q6Count} responses`:`Q7 · ${q7Count} responses`;
+    const colClass=isLikes?'likes':'improve';
+    const accentColor=isLikes?'#065f46':'#78350f';
+    const points=items.map(p=>`<div class="sv-point"><span class="sv-point-dot"></span><span class="sv-point-text">${p}</span></div>`).join('');
+    return`<div class="sv-col ${colClass}"><div class="sv-col-header"><div style="display:inline-flex;align-items:center;justify-content:center;width:10px;height:10px;border-radius:50%;background:${accentColor};flex-shrink:0;margin-top:2px;"></div><div><div class="sv-col-title">${title}</div><div class="sv-col-sub">${qLabel}</div></div></div>${items.length?points:'<div class="sv-no-data">No clear themes found in the responses.</div>'}</div>`;
+  }
   grid.innerHTML=buildCol(likes,'likes')+buildCol(improvements,'improvements');
-  const metaEl=document.getElementById('svMeta');if(metaEl)metaEl.textContent=`${q6Count} Q6 responses and ${q7Count} Q7 responses · ${new Date().toLocaleTimeString()}`;
-  document.getElementById('svRegenBtn').style.display='inline-block';svShow('result');
+  const metaEl=document.getElementById('svMeta');
+  if(metaEl)metaEl.textContent=`${q6Count} Q6 responses and ${q7Count} Q7 responses · ${new Date().toLocaleTimeString()}`;
+  document.getElementById('svRegenBtn').style.display='inline-block';
+  svShow('result');
 }
 
 /* ═══════════════════════════════════════════
    TREND PANEL
 ═══════════════════════════════════════════ */
-function buildTrendCycleButtons(){
-  const{cycles}=TREND_DATA;const wrap=document.getElementById('trendCycleBtns');
-  if(!cycles.length){wrap.innerHTML='';return;}
-  wrap.innerHTML=cycles.map((c,i)=>`<button class="trend-cycle-btn${i===cycles.length-1?' active':''}" onclick="selectTrendCycle('${c}',this)">${c}</button>`).join('');
-  // Refresh month filter dropdown too
-  populateMonthFilterDropdown();
-}
+function buildTrendCycleButtons(){const{cycles}=TREND_DATA;const wrap=document.getElementById('trendCycleBtns');if(!cycles.length){wrap.innerHTML='';return;}wrap.innerHTML=cycles.map((c,i)=>`<button class="trend-cycle-btn${i===cycles.length-1?' active':''}" onclick="selectTrendCycle('${c}',this)">${c}</button>`).join('');}
 function selectTrendCycle(cycle,btn){document.querySelectorAll('.trend-cycle-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderTrendKpis(cycle);}
-function getTrendDateRange(){const{cycles}=TREND_DATA;if(!cycles||!cycles.length)return'Sep 2025 – Apr 2026';const first=cycles[0];const last=cycles[cycles.length-1];return first===last?first:`${first} – ${last}`;}
+function getTrendDateRange(){
+  const{cycles}=TREND_DATA;
+  if(!cycles||!cycles.length)return'Sep 2025 – Apr 2026';
+  const first=cycles[0];
+  const last=cycles[cycles.length-1];
+  return first===last?first:`${first} – ${last}`;
+}
 function renderTrendPanel(){
   const{cycles,hasCycleCol,hasDedicatedSheet,cycleStats}=TREND_DATA;const collegeName=currentCollege?currentCollege.name:'';const hasConfig=!!DEDICATED_TREND_SHEETS[collegeName];
   const srcIndicator=document.getElementById('trendSourceIndicator');
   if(hasDedicatedSheet){srcIndicator.style.display='none';srcIndicator.innerHTML='';document.getElementById('trendHeroSub').textContent=`Live trend data from dedicated sheet · ${cycles.length} months tracked`;}
   else if(hasConfig){srcIndicator.style.display='inline-flex';srcIndicator.innerHTML=`<span class="trend-source-badge simulated">Sheet load failed — showing simulated</span>`;document.getElementById('trendHeroSub').textContent=`Could not load dedicated trend sheet — showing simulated preview data`;}
   else if(hasCycleCol){srcIndicator.style.display='none';document.getElementById('trendHeroSub').textContent=`Tracking ${cycles.length} months with real cycle data from your sheet`;}
-  else{srcIndicator.style.display='none';document.getElementById('trendHeroSub').textContent=`Preview mode — simulated trend for Sep 2025–Apr 2026.`;}
+// REPLACE WITH:
+else{srcIndicator.style.display='none';document.getElementById('trendHeroSub').textContent=`Preview mode — simulated trend for Sep 2025–Apr 2026.`;}
   const _tdr=getTrendDateRange();
-  const _eyebrow=document.getElementById('trendEyebrow');if(_eyebrow)_eyebrow.textContent=`Historical Analytics · ${_tdr}`;
-  const _heroTitle=document.getElementById('trendHeroTitle');if(_heroTitle)_heroTitle.textContent=`Trend Over Time · ${_tdr}`;
-  const _rct=document.getElementById('trendRatingCardTitle');if(_rct)_rct.textContent=`Average Rating Trend · ${_tdr}`;
-  const _tct=document.getElementById('trendTableCardTitle');if(_tct)_tct.textContent=`Month-by-Month Summary Table · ${_tdr}`;
+  const _eyebrow=document.getElementById('trendEyebrow');
+  if(_eyebrow)_eyebrow.textContent=`Historical Analytics · ${_tdr}`;
+  const _heroTitle=document.getElementById('trendHeroTitle');
+  if(_heroTitle)_heroTitle.textContent=`Trend Over Time · ${_tdr}`;
+  const _rct=document.getElementById('trendRatingCardTitle');
+  if(_rct)_rct.textContent=`Average Rating Trend · ${_tdr}`;
+  const _tct=document.getElementById('trendTableCardTitle');
+  if(_tct)_tct.textContent=`Month-by-Month Summary Table · ${_tdr}`;
   document.getElementById('trendRatingBadge').textContent=`${cycles.length} months`;document.getElementById('trendNpsBadge').textContent=`${cycles.length} months`;document.getElementById('trendHitRatioBadge').textContent=`${cycles.length} months`;document.getElementById('trendSegBadge').textContent=`${cycles.length} months`;document.getElementById('trendTableBadge').textContent=`${cycles.length} months`;
   if(!cycles.length)return;
   renderTrendKpis(cycles[cycles.length-1]);renderTrendCharts();renderTrendCycleTable();
@@ -1390,22 +1430,18 @@ function renderTrendCycleTable(){
    MENTOR TABLE
 ═══════════════════════════════════════════ */
 function renderMentorTable(){
-  const list=getFilteredMentors(currentDeptFilter);const isDeptActive=currentDeptFilter&&currentDeptFilter!=='all';const isMonthActive=currentMonthFilter&&currentMonthFilter!=='all';
+  const list=getFilteredMentors(currentDeptFilter);const isDeptActive=currentDeptFilter&&currentDeptFilter!=='all';
   let displayMean,displayTotal;
   if(isDeptActive){const deptMs=MENTORS.filter(m=>m.depts.some(d=>d===currentDeptFilter));let tw=0,tr=0;deptMs.forEach(m=>{const rs=m.deptRatings[currentDeptFilter]||[];tw+=rs.reduce((a,b)=>a+b,0);tr+=rs.length;});displayMean=tr>0?tw/tr:0;displayTotal=tr;}
   else{const sumResponses=MENTORS.reduce((s,m)=>s+m.responses,0);const sumAvgXResp=MENTORS.reduce((s,m)=>s+m.avgXResponses,0);displayMean=sumResponses>0?sumAvgXResp/sumResponses:0;displayTotal=sumResponses;}
-  document.getElementById('mtSumGlobalMean').textContent=displayMean>0?displayMean.toFixed(7):'—';
-  document.getElementById('mtSumTotalResp').textContent=displayTotal||'—';
-  const monthLabel=isMonthActive?` · ${currentMonthFilter}`:'';
-  document.getElementById('mentorTableCountBadge').textContent=list.length>0?`${list.length} mentors${monthLabel}`:'No data';
-  if(!list.length){document.getElementById('mentorTableBody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink3)">No mentors found for this selection</td></tr>';return;}
+  document.getElementById('mtSumGlobalMean').textContent=displayMean>0?displayMean.toFixed(7):'—';document.getElementById('mtSumTotalResp').textContent=displayTotal||'—';document.getElementById('mentorTableCountBadge').textContent=list.length>0?`${list.length} mentors`:'No data';
+  if(!list.length){document.getElementById('mentorTableBody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink3)">No mentors found</td></tr>';return;}
   const deptLabel=isDeptActive?currentDeptFilter:null;const rankColors={1:'#f5c842',2:'#e0e0e0',3:'#f0c498'};
   document.getElementById('mentorTableBody').innerHTML=list.map(m=>{
     const displayRank=m.filteredRank;const rankBg=rankColors[displayRank]||'transparent';const rankColor=displayRank<=3?'#3d2200':'var(--ink3)';const rankBorder=displayRank<=3?'none':'1px solid var(--border2)';
     const displayDept=deptLabel||m.depts.join(', ');const s=deptStyle(deptLabel||m.depts[0]||'');
     const displayRating=isDeptActive?getMentorDeptRating(m,currentDeptFilter):m.rating;const displayResponses=isDeptActive?getMentorDeptResponses(m,currentDeptFilter):m.responses;const ratingColor=isDeptActive?getStatusColor(displayRating):'var(--gold-dark)';
-    const monthNote=isMonthActive?`<div style="font-size:10px;color:var(--ink4);margin-top:1px;">(${currentMonthFilter})</div>`:'';
-    return`<tr><td style="text-align:center;"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${rankBg};border:${rankBorder};font-size:11px;font-weight:700;color:${rankColor};">${displayRank}</span></td><td><button class="mentor-name-btn" data-mentor="${m.name.replace(/"/g,'&quot;')}" data-dept="${(deptLabel||'').replace(/"/g,'&quot;')}">${m.name}</button></td><td><span class="badge" style="color:${s.color};background:${s.bg};border:1px solid ${s.border}">${displayDept}</span></td><td style="text-align:center;"><span style="font-family:var(--font-display);font-size:18px;color:${ratingColor};">${displayRating.toFixed(2)}</span><span style="font-size:11px;color:var(--ink4);">/5</span>${isDeptActive?`<div style="font-size:10px;color:var(--ink4);margin-top:1px;">(${currentDeptFilter})</div>`:''}${monthNote}</td><td style="text-align:center;font-family:var(--font-display);font-size:16px;color:var(--ink2);">${displayResponses}${isDeptActive?`<div style="font-size:10px;color:var(--ink4);font-family:var(--font-body);">dept only</div>`:''}</td><td style="text-align:center;"><span style="font-family:var(--font-display);font-size:16px;color:var(--gold-dark);">${isDeptActive?calcDeptBayesian(m,currentDeptFilter).toFixed(7):m.bayesianRating.toFixed(7)}</span>${isDeptActive?`<div style="font-size:10px;color:var(--ink4);font-family:var(--font-body);">dept bayesian</div>`:''}</td><td>${statusBadge(displayRating)}</td></tr>`;
+    return`<tr><td style="text-align:center;"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${rankBg};border:${rankBorder};font-size:11px;font-weight:700;color:${rankColor};">${displayRank}</span></td><td><button class="mentor-name-btn" data-mentor="${m.name.replace(/"/g,'&quot;')}" data-dept="${(deptLabel||'').replace(/"/g,'&quot;')}">${m.name}</button></td><td><span class="badge" style="color:${s.color};background:${s.bg};border:1px solid ${s.border}">${displayDept}</span></td><td style="text-align:center;"><span style="font-family:var(--font-display);font-size:18px;color:${ratingColor};">${displayRating.toFixed(2)}</span><span style="font-size:11px;color:var(--ink4);">/5</span>${isDeptActive?`<div style="font-size:10px;color:var(--ink4);margin-top:1px;">(${currentDeptFilter})</div>`:''}</td><td style="text-align:center;font-family:var(--font-display);font-size:16px;color:var(--ink2);">${displayResponses}${isDeptActive?`<div style="font-size:10px;color:var(--ink4);font-family:var(--font-body);">dept only</div>`:''}</td><td style="text-align:center;"><span style="font-family:var(--font-display);font-size:16px;color:var(--gold-dark);">${isDeptActive?calcDeptBayesian(m,currentDeptFilter).toFixed(7):m.bayesianRating.toFixed(7)}</span>${isDeptActive?`<div style="font-size:10px;color:var(--ink4);font-family:var(--font-body);">dept bayesian</div>`:''}</td><td>${statusBadge(displayRating)}</td></tr>`;
   }).join('');
   document.querySelectorAll('.mentor-name-btn').forEach(btn=>{btn.addEventListener('click',function(){openMentorModal(this.getAttribute('data-mentor'),this.getAttribute('data-dept')||null);});});
 }
@@ -1446,87 +1482,158 @@ function openMentorModal(mentorName,dept){
 function closeMentorModal(){document.getElementById('mentorModalOverlay').classList.remove('open');}
 
 /* ═══════════════════════════════════════════
-   LANDING — DATA FETCH
-═══════════════════════════════════════════ */
-function landingSetStatus(type,msg){const dot=document.getElementById('landingStatusDot');const colors={loading:'#f59e0b',ok:'#10b981',error:'#ef4444'};dot.style.background=colors[type]||'#c0c0c0';dot.style.animation=type==='loading'?'spin 1s linear infinite':'none';document.getElementById('landingStatusText').textContent=msg;}
-function landingNormalize(key){return(key||'').toLowerCase().replace(/[\s_\-\.\/\(\)#]+/g,'').replace(/[^a-z0-9]/g,'');}
-function landingFindCol(headers,candidates){const normH=headers.map(h=>({raw:h,norm:landingNormalize(h)}));for(const c of candidates){const nc=landingNormalize(c);const found=normH.find(h=>h.norm===nc||h.norm.includes(nc));if(found)return found.raw;}return null;}
-async function landingFetchData(){
-  landingSetStatus('loading','Fetching data from Google Sheets…');document.getElementById('landingErrorBox').style.display='none';document.getElementById('landingTableBody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:48px;color:var(--ink3);">Loading…</td></tr>';
-  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${LANDING_GID}`;
-  try{const resp=await fetch(url);if(!resp.ok)throw new Error(`HTTP ${resp.status}`);const text=await resp.text();landingParseCSV(text);return Promise.resolve();}
-  catch(e){landingSetStatus('error','Failed to load — check sheet permissions');const eb=document.getElementById('landingErrorBox');eb.style.display='block';eb.innerHTML=`<strong>Unable to load data</strong><br>Make sure the Google Sheet is set to "Anyone with the link can view".<br><em style="font-size:11px;">Error: ${e.message}</em>`;document.getElementById('landingTableBody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:48px;color:var(--ink3);">No data — check sheet permissions above.</td></tr>';return Promise.reject(e);}
-}
-function landingParseCSV(text){
-  Papa.parse(text,{header:true,skipEmptyLines:true,complete(res){
-    const rows=res.data;if(!rows.length){landingSetStatus('error','Sheet appears empty');return;}
-    const headers=Object.keys(rows[0]);const colCollege=landingFindCol(headers,['college name','college','institution','name']);const colRating=landingFindCol(headers,['overall avg rating','avg rating','average rating','overall rating','rating']);const colNps=landingFindCol(headers,['nps score','nps','net promoter score']);const colHit=landingFindCol(headers,['hit ratio','hit rate','hitratio','hitrate','response rate']);
-    if(!colCollege){landingSetStatus('error','College Name column not found');return;}
-    landingData=rows.map(row=>{const college=(row[colCollege]||'').trim();const rating=colRating?parseFloat((row[colRating]||'').toString().replace(/[^0-9.\-]/g,'')):null;let nps=colNps?parseFloat((row[colNps]||'').toString().replace(/[^0-9.\-]/g,'')):null;let hit=colHit?parseFloat((row[colHit]||'').toString().replace(/[^0-9.]/g,'')):null;if(nps!==null&&Math.abs(nps)<=1)nps=Math.round(nps*100);return{college,rating:isNaN(rating)?null:rating,nps:isNaN(nps)?null:nps,hit:isNaN(hit)?null:hit};}).filter(r=>r.college);
-    landingData.sort((a,b)=>{const as=(a.rating||0)*0.6+(a.nps!==null?(a.nps+100)/200*5:0)*0.4;const bs=(b.rating||0)*0.6+(b.nps!==null?(b.nps+100)/200*5:0)*0.4;return bs-as;});landingData.forEach((r,i)=>r.rank=i+1);
-    document.getElementById('lhsTotal').textContent=landingData.length;document.getElementById('landingHeroSub').textContent=`${landingData.length} colleges · Last updated ${new Date().toLocaleTimeString()}`;document.getElementById('lastUpdated').textContent=new Date().toLocaleTimeString();landingSetStatus('ok',`Loaded ${landingData.length} colleges · ${new Date().toLocaleTimeString()}`);landingLoaded=true;landingFilterRender();
-  },error(e){landingSetStatus('error','CSV parse error: '+e.message);}});
-}
-function landingToggleSort(col){if(landingSortState.col===col){landingSortState.dir=landingSortState.dir==='desc'?'asc':'desc';}else{landingSortState.col=col;landingSortState.dir='desc';}document.getElementById('landingSort').value='rank';landingFilterRender();}
-function landingGetSorted(){const q=(document.getElementById('landingSearch').value||'').toLowerCase();const sel=document.getElementById('landingSort').value;let list=landingData.filter(r=>!q||r.college.toLowerCase().includes(q));let{col,dir}=landingSortState;const selMap={rating_desc:{col:'rating',dir:'desc'},rating_asc:{col:'rating',dir:'asc'},nps_desc:{col:'nps',dir:'desc'},nps_asc:{col:'nps',dir:'asc'},hit_desc:{col:'hit',dir:'desc'},hit_asc:{col:'hit',dir:'asc'},name:{col:'name',dir:'asc'}};if(selMap[sel]){col=selMap[sel].col;dir=selMap[sel].dir;}['name','rating','nps','hit'].forEach(c=>{const el=document.getElementById('larr-'+c);if(el)el.textContent='';});const arrEl=document.getElementById('larr-'+col);if(arrEl)arrEl.textContent=dir==='desc'?' ↓':' ↑';list.sort((a,b)=>{if(col==='rank')return a.rank-b.rank;if(col==='name')return dir==='asc'?a.college.localeCompare(b.college):b.college.localeCompare(a.college);const va=col==='rating'?a.rating:col==='nps'?a.nps:a.hit;const vb=col==='rating'?b.rating:col==='nps'?b.nps:b.hit;if(va===null&&vb===null)return 0;if(va===null)return 1;if(vb===null)return-1;return dir==='desc'?vb-va:va-vb;});return list;}
-function landingNpsColor(n){if(n===null)return'var(--ink3)';if(n>=30)return'#065f46';if(n>=0)return'#78350f';return'#7f1d1d';}
-function landingHitColor(h){if(h===null)return'var(--border2)';if(h>=80)return'#10b981';if(h>=50)return'#f59e0b';return'#ef4444';}
-function landingRatingBg(r){if(r===null)return{bg:'var(--bg2)',color:'var(--ink3)',border:'var(--border2)'};if(r>=4.3)return{bg:'#fde9a0',color:'#5c3600',border:'#e6b84a'};if(r>=4.0)return{bg:'#d1fae5',color:'#065f46',border:'#6ee7b7'};if(r>=3.5)return{bg:'#fef3c7',color:'#78350f',border:'#fcd34d'};return{bg:'#fee2e2',color:'#7f1d1d',border:'#fca5a5'};}
-function landingFilterRender(){
-  const list=landingGetSorted();if(!list.length){document.getElementById('landingTableBody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:48px;color:var(--ink3);">No colleges match your search.</td></tr>';return;}
-  const rankColors={1:{bg:'#f5c842',color:'#3d2200'},2:{bg:'#c0c0c0',color:'#2a2a2a'},3:{bg:'#cd7f32',color:'#fff'}};const maxHit=Math.max(...list.map(r=>r.hit||0),100);
-  document.getElementById('landingTableBody').innerHTML=list.map(r=>{
-    const rc=rankColors[r.rank]||null;
-    const rankBadge=rc?`<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:${rc.bg};color:${rc.color};font-size:11px;font-weight:700;">${r.rank}</span>`:`<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--bg2);border:1px solid var(--border2);font-size:11px;color:var(--ink3);">${r.rank}</span>`;
-    let ratingCell;if(r.rating!==null){const{bg,color,border}=landingRatingBg(r.rating);ratingCell=`<span style="display:inline-flex;align-items:center;justify-content:center;padding:4px 14px;border-radius:20px;background:${bg};color:${color};border:1px solid ${border};font-size:13px;font-weight:600;min-width:52px;">${r.rating.toFixed(1)}</span>`;}else ratingCell='<span style="color:var(--ink3);">—</span>';
-    const npsDisplay=r.nps!==null?(r.nps>0?'+':'')+r.nps:'—';
-    const hitW=r.hit!==null?Math.round(Math.min(r.hit,maxHit)/maxHit*100):0;const hc=landingHitColor(r.hit);
-    const hitCell=`<div style="display:flex;align-items:center;gap:8px;justify-content:center;"><div style="flex:1;max-width:80px;height:6px;background:var(--bg2);border-radius:6px;overflow:hidden;"><div style="width:${hitW}%;height:100%;background:${hc};border-radius:6px;"></div></div><span style="font-size:12px;font-weight:500;color:${hc};min-width:44px;text-align:right;">${r.hit!==null?r.hit.toFixed(1)+'%':'—'}</span></div>`;
-    const collegeIdx=findCollegeIndex(r.college);
-    const viewBtn=collegeIdx>=0?`<button onclick="selectCollege(${collegeIdx})" style="padding:5px 14px;background:var(--gold-dark);color:#fde9a0;border:none;border-radius:20px;font-family:var(--font-body);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='#7a4f00'" onmouseout="this.style.background='var(--gold-dark)'">View →</button>`:`<span style="font-size:11px;color:var(--ink4);">—</span>`;
-    return`<tr><td style="text-align:center;">${rankBadge}</td><td style="font-size:13px;font-weight:500;color:#7a4f00;">${r.college}</td><td style="text-align:center;">${ratingCell}</td><td style="text-align:center;font-family:var(--font-display);font-size:17px;color:${landingNpsColor(r.nps)};">${npsDisplay}</td><td>${hitCell}</td><td style="text-align:center;">${viewBtn}</td></tr>`;
-  }).join('');
-}
-
-/* ═══════════════════════════════════════════
    DOWNLOAD
 ═══════════════════════════════════════════ */
 function statusBadgeInline(r){if(r>=4.3)return'<span style="background:#fde9a0;color:#5c3600;border:1px solid #e6b84a;border-radius:20px;font-size:11px;padding:2px 9px;font-weight:500">Excellent</span>';if(r>=4.0)return'<span style="background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;border-radius:20px;font-size:11px;padding:2px 9px;font-weight:500">Good</span>';if(r>=3.5)return'<span style="background:#fef3c7;color:#78350f;border:1px solid #fcd34d;border-radius:20px;font-size:11px;padding:2px 9px;font-weight:500">Average</span>';return'<span style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;border-radius:20px;font-size:11px;padding:2px 9px;font-weight:500">Needs work</span>';}
 async function downloadReport(){
-  const btn=document.getElementById('downloadBtn');btn.disabled=true;btn.textContent='⏳ Generating PDF…';
-  const collegeName=currentCollege?.name||'College Overview';const now=new Date().toLocaleString();
-  try{
-    const{jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});const pageW=pdf.internal.pageSize.getWidth();const pageH=pdf.internal.pageSize.getHeight();const margin=10;const headerH=14;const usableH=pageH-headerH-4;
-    function addHeader(){pdf.setFillColor(74,40,0);pdf.rect(0,0,pageW,headerH,'F');pdf.setFontSize(9);pdf.setTextColor(253,233,160);pdf.text('FacePrep Campus · Performance Dashboard',margin,9);pdf.text(collegeName,pageW/2,9,{align:'center'});pdf.text(now,pageW-margin,9,{align:'right'});}
-    async function captureElement(el){el.style.display='flex';el.style.opacity='1';await new Promise(r=>setTimeout(r,400));return await html2canvas(el,{scale:1.5,useCORS:true,allowTaint:true,backgroundColor:'#fdf8ed',logging:false,windowWidth:1200});}
-    async function addCanvasToPdf(canvas,isFirstPage){const imgW=pageW-margin*2;const imgH=(canvas.height*imgW)/canvas.width;const ratio=canvas.width/imgW;const sliceH=Math.floor(usableH*ratio);let yOffset=0;let firstSlice=true;while(yOffset<canvas.height){if(!isFirstPage||!firstSlice) pdf.addPage();addHeader();const thisSliceH=Math.min(sliceH,canvas.height-yOffset);const sliceCanvas=document.createElement('canvas');sliceCanvas.width=canvas.width;sliceCanvas.height=thisSliceH;const ctx=sliceCanvas.getContext('2d');ctx.fillStyle='#fdf8ed';ctx.fillRect(0,0,sliceCanvas.width,sliceCanvas.height);ctx.drawImage(canvas,0,-yOffset);const sliceData=sliceCanvas.toDataURL('image/jpeg',0.92);const sliceImgH=(thisSliceH*imgW)/canvas.width;pdf.addImage(sliceData,'JPEG',margin,headerH+2,imgW,sliceImgH);yOffset+=sliceH;firstSlice=false;}}
-    const allPanels=document.querySelectorAll('.panel');allPanels.forEach(p=>{p.style.display='none';p.classList.remove('active');});
-    let isFirstPage=true;
-    if(currentMode==='overview'){const panel=document.getElementById('panel-landing');const canvas=await captureElement(panel);await addCanvasToPdf(canvas,true);}
-    else{
-      const summaryPanel=document.getElementById('panel-summary');summaryPanel.style.display='flex';summaryPanel.style.opacity='1';await new Promise(r=>setTimeout(r,500));const summaryCanvas=await html2canvas(summaryPanel,{scale:1.2,useCORS:true,allowTaint:true,backgroundColor:'#fdf8ed',logging:false,windowWidth:1200});summaryPanel.style.display='none';
-      addHeader();const imgW=pageW-margin*2;const summaryImgH=Math.min((summaryCanvas.height*imgW)/summaryCanvas.width,usableH);pdf.addImage(summaryCanvas.toDataURL('image/jpeg',0.92),'JPEG',margin,headerH+2,imgW,summaryImgH);isFirstPage=false;
-      const mentorPanel=document.getElementById('panel-mentors');const mentorCanvas=await captureElement(mentorPanel);mentorPanel.style.display='none';await addCanvasToPdf(mentorCanvas,false);
-      const npsPanel=document.getElementById('panel-nps');npsPanel.style.display='flex';npsPanel.style.opacity='1';const svCard=document.getElementById('studentVoiceCard');const svPrev=svCard.style.display;svCard.style.display='none';await new Promise(r=>setTimeout(r,400));const npsTopCanvas=await html2canvas(npsPanel,{scale:1.2,useCORS:true,allowTaint:true,backgroundColor:'#fdf8ed',logging:false,windowWidth:1200});svCard.style.display=svPrev;npsPanel.style.display='none';
-      pdf.addPage();addHeader();const npsImgH=Math.min((npsTopCanvas.height*imgW)/npsTopCanvas.width,usableH);pdf.addImage(npsTopCanvas.toDataURL('image/jpeg',0.92),'JPEG',margin,headerH+2,imgW,npsImgH);
-      const trendPanel=document.getElementById('panel-trends');const trendCanvas=await captureElement(trendPanel);trendPanel.style.display='none';await addCanvasToPdf(trendCanvas,false);
-    }
-    allPanels.forEach(p=>p.style.display='none');
-    const activePanelId=currentMode==='overview'?'panel-landing':'panel-'+currentDetailPanel;const ap=document.getElementById(activePanelId);if(ap){ap.style.display='flex';ap.classList.add('active');}
-    document.querySelector('.page-header').style.display=currentDetailPanel==='trends'?'none':'flex';
-    const filename=currentMode==='overview'?`College-Overview-${new Date().toISOString().split('T')[0]}.pdf`:`Report-${collegeName.replace(/[^a-z0-9]/gi,'-')}-${new Date().toISOString().split('T')[0]}.pdf`;
-    pdf.save(filename);
-  }catch(err){console.error('PDF error:',err);alert('PDF generation failed: '+err.message);}
-  finally{btn.disabled=false;btn.innerHTML='↓ <span>Download Report</span>';}
-}
+  const btn=document.getElementById('downloadBtn');
+  btn.disabled=true;btn.textContent='⏳ Generating PDF…';
+  const collegeName=currentCollege?.name||'Dashboard';
+  const now=new Date().toLocaleString();
 
-/* ═══════════════════════════════════════════
+  try{
+    const{jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pageW=pdf.internal.pageSize.getWidth();
+    const pageH=pdf.internal.pageSize.getHeight();
+    const margin=10;
+    const headerH=14;
+    const usableH=pageH-headerH-4;
+
+    function addHeader(){
+      pdf.setFillColor(74,40,0);
+      pdf.rect(0,0,pageW,headerH,'F');
+      pdf.setFontSize(9);
+      pdf.setTextColor(253,233,160);
+      pdf.text('FacePrep Campus · Performance Dashboard',margin,9);
+      pdf.text(collegeName,pageW/2,9,{align:'center'});
+      pdf.text(now,pageW-margin,9,{align:'right'});
+    }
+
+    async function captureElement(el){
+      el.style.display='flex';
+      el.style.opacity='1';
+      await new Promise(r=>setTimeout(r,400));
+      return await html2canvas(el,{
+        scale:1.5,useCORS:true,allowTaint:true,
+        backgroundColor:'#fdf8ed',logging:false,windowWidth:1200
+      });
+    }
+
+    async function addCanvasToPdf(canvas,isFirstPage){
+      const imgW=pageW-margin*2;
+      const imgH=(canvas.height*imgW)/canvas.width;
+      const ratio=canvas.width/imgW;
+      const sliceH=Math.floor(usableH*ratio);
+      let yOffset=0;
+      let firstSlice=true;
+
+      while(yOffset<canvas.height){
+        if(!isFirstPage||!firstSlice) pdf.addPage();
+        addHeader();
+
+        const thisSliceH=Math.min(sliceH,canvas.height-yOffset);
+        const sliceCanvas=document.createElement('canvas');
+        sliceCanvas.width=canvas.width;
+        sliceCanvas.height=thisSliceH;
+        const ctx=sliceCanvas.getContext('2d');
+        ctx.fillStyle='#fdf8ed';
+        ctx.fillRect(0,0,sliceCanvas.width,sliceCanvas.height);
+        ctx.drawImage(canvas,0,-yOffset);
+        const sliceData=sliceCanvas.toDataURL('image/jpeg',0.92);
+        const sliceImgH=(thisSliceH*imgW)/canvas.width;
+        pdf.addImage(sliceData,'JPEG',margin,headerH+2,imgW,sliceImgH);
+
+        yOffset+=sliceH;
+        firstSlice=false;
+      }
+    }
+
+    // Hide all panels
+    const allPanels=document.querySelectorAll('.panel');
+    allPanels.forEach(p=>{p.style.display='none';p.classList.remove('active');});
+
+    let isFirstPage=true;
+
+      // === PAGE 1: Summary (metrics + charts) — force single page ===
+      const summaryPanel=document.getElementById('panel-summary');
+      summaryPanel.style.display='flex';
+      summaryPanel.style.opacity='1';
+      await new Promise(r=>setTimeout(r,500));
+      const summaryCanvas=await html2canvas(summaryPanel,{
+        scale:1.2,useCORS:true,allowTaint:true,
+        backgroundColor:'#fdf8ed',logging:false,windowWidth:1200
+      });
+      summaryPanel.style.display='none';
+
+      addHeader();
+      const imgW=pageW-margin*2;
+      const summaryImgH=Math.min((summaryCanvas.height*imgW)/summaryCanvas.width, usableH);
+      pdf.addImage(summaryCanvas.toDataURL('image/jpeg',0.92),'JPEG',margin,headerH+2,imgW,summaryImgH);
+      isFirstPage=false;
+
+      // === PAGE 2: Mentor Performance ===
+      const mentorPanel=document.getElementById('panel-mentors');
+      const mentorCanvas=await captureElement(mentorPanel);
+      mentorPanel.style.display='none';
+      await addCanvasToPdf(mentorCanvas,false);
+
+      // === PAGE 3: NPS — banner + hero cards + followup questions (all in one page) ===
+      // Render nps panel but only capture up to studentVoiceCard
+      const npsPanel=document.getElementById('panel-nps');
+      npsPanel.style.display='flex';
+      npsPanel.style.opacity='1';
+
+      // Temporarily hide student voice card
+      const svCard=document.getElementById('studentVoiceCard');
+      const svPrev=svCard.style.display;
+      svCard.style.display='none';
+
+      await new Promise(r=>setTimeout(r,400));
+      const npsTopCanvas=await html2canvas(npsPanel,{
+        scale:1.2,useCORS:true,allowTaint:true,
+        backgroundColor:'#fdf8ed',logging:false,windowWidth:1200
+      });
+      svCard.style.display=svPrev;
+      npsPanel.style.display='none';
+
+      pdf.addPage();
+      addHeader();
+      const npsImgH=Math.min((npsTopCanvas.height*imgW)/npsTopCanvas.width, usableH);
+      pdf.addImage(npsTopCanvas.toDataURL('image/jpeg',0.92),'JPEG',margin,headerH+2,imgW,npsImgH);
+
+      // === PAGE 4: Trend Over Time ===
+      const trendPanel=document.getElementById('panel-trends');
+      const trendCanvas=await captureElement(trendPanel);
+      trendPanel.style.display='none';
+      await addCanvasToPdf(trendCanvas,false);
+
+    // Restore active panel
+    allPanels.forEach(p=>p.style.display='none');
+    const activePanelId='panel-'+currentDetailPanel;
+    const ap=document.getElementById(activePanelId);
+    if(ap){ap.style.display='flex';ap.classList.add('active');}
+    document.querySelector('.page-header').style.display=currentDetailPanel==='trends'?'none':'flex';
+
+    const filename=`Report-${collegeName.replace(/[^a-z0-9]/gi,'-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+
+    pdf.save(filename);
+
+  }catch(err){
+    console.error('PDF error:',err);
+    alert('PDF generation failed: '+err.message);
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='↓ <span>Download Report</span>';
+  }
+}/* ═══════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded',()=>{
   buildDropdown();
-  document.getElementById('loadingOverlay').classList.add('hidden');
-  landingFetchData();
+  // Open directly into the main dashboard. The first configured college is loaded by default.
+  if(COLLEGES.length){selectCollege(0);}
+  else{document.getElementById('loadingOverlay').classList.add('hidden');}
 });
 </script>
 </body>
